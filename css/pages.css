@@ -1,0 +1,297 @@
+/* ==========================================================
+   糖尿病预治智能助手 — 页面级样式
+   按页面分节，公共组件一律在 common.css 中，此处只放页面独有布局
+   ========================================================== */
+
+/* ============ 1. 登录 / 注册 ============ */
+.auth-page {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #E8F5E9 100%);
+  padding: 24px 20px;
+}
+.auth-container { width: 100%; max-width: 400px; }
+.auth-header { text-align: center; margin-bottom: 28px; }
+.auth-logo {
+  width: 72px; height: 72px; margin: 0 auto 16px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 20px; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 24px rgba(33, 150, 243, .3);
+}
+.auth-logo svg { width: 40px; height: 40px; fill: #fff; }
+.auth-title { font-size: 23px; font-weight: 600; margin-bottom: 8px; }
+.auth-subtitle { font-size: 14px; color: var(--text-secondary); }
+.auth-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, .1); padding: 28px; }
+.auth-tabs { display: flex; margin-bottom: 22px; border-bottom: 1px solid var(--border-color); }
+.auth-tab {
+  flex: 1; padding: 12px; text-align: center; font-size: 16px; font-weight: 500;
+  color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast); background: none;
+}
+.auth-tab.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+.auth-form { display: none; }
+.auth-form.active { display: block; }
+.password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted); background: none; border: none; padding: 2px; }
+.form-footer { text-align: center; margin-top: 18px; font-size: 14px; color: var(--text-muted); }
+.form-footer a { font-weight: 500; }
+.auth-demo { margin-top: 22px; text-align: center; }
+.auth-demo-accounts { display: flex; gap: 10px; margin-top: 8px; }
+.demo-account {
+  flex: 1; padding: 10px; background: rgba(255, 255, 255, .75); border: 1px solid rgba(255, 255, 255, .9);
+  border-radius: 10px; cursor: pointer; transition: all .2s; display: flex; flex-direction: column; gap: 2px;
+  backdrop-filter: blur(4px);
+}
+.demo-account:hover { background: #fff; box-shadow: var(--shadow-sm); }
+.demo-account strong { font-size: 13px; color: var(--text-primary); }
+.demo-account span { font-size: 11px; color: var(--text-muted); }
+
+/* ============ 2. 首页 ============ */
+.banner-section { padding: 16px 0 0; }
+.quick-entry { padding: 16px 0; }
+
+/* ============ 3. 文章详情 ============ */
+.article-hero { background: linear-gradient(135deg, #2196F3, #1565C0); color: #fff; padding: 24px 0 28px; }
+.article-hero h1 { font-size: 21px; font-weight: 600; line-height: 1.45; margin-bottom: 12px; }
+.article-hero-meta { display: flex; gap: 14px; font-size: 12px; opacity: .9; flex-wrap: wrap; }
+.article-body { background: #fff; border-radius: 12px; padding: 20px; margin: 16px 0; }
+.article-actions { display: flex; gap: 12px; padding: 0 0 24px; }
+.article-actions .btn { flex: 1; }
+
+/* ============ 4. 糖尿病类型详情 ============ */
+.type-hero { padding: 24px 0; color: #fff; }
+.type-hero.type1 { background: linear-gradient(135deg, #EF5350, #C62828); }
+.type-hero.type2 { background: linear-gradient(135deg, #42A5F5, #1565C0); }
+.type-hero.gestational { background: linear-gradient(135deg, #AB47BC, #6A1B9A); }
+.type-hero.special { background: linear-gradient(135deg, #FFA726, #E65100); }
+.type-hero h1 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+.type-hero p { font-size: 14px; opacity: .94; line-height: 1.7; }
+.type-block { background: #fff; border-radius: 12px; padding: 18px; margin-bottom: 14px; }
+.type-block h3 { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+.type-block h3::before { content: ''; width: 4px; height: 16px; border-radius: 2px; background: var(--primary-color); }
+.type-block p { font-size: 14px; line-height: 1.85; color: var(--text-secondary); }
+.type-block ul { padding-left: 4px; }
+.type-block ul li {
+  position: relative; padding-left: 20px; margin: 8px 0; font-size: 14px;
+  line-height: 1.8; color: var(--text-secondary);
+}
+.type-block ul li::before {
+  content: ''; position: absolute; left: 4px; top: 10px; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--secondary-color);
+}
+
+/* ============ 5. 医师咨询 ============ */
+.doctor-list { display: flex; flex-direction: column; gap: 12px; }
+.doctor-card {
+  display: flex; gap: 14px; background: #fff; border-radius: 12px; padding: 16px;
+  cursor: pointer; transition: all .2s; align-items: center;
+}
+.doctor-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.doctor-avatar {
+  width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; color: #fff; font-size: 22px; font-weight: 600; flex-shrink: 0;
+}
+.doctor-info { flex: 1; min-width: 0; }
+.doctor-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.doctor-name { font-size: 16px; font-weight: 600; }
+.doctor-dept { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+.doctor-intro { font-size: 13px; color: var(--text-secondary); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.doctor-status { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
+.doctor-status.online { color: var(--success-color); }
+.doctor-status.offline { color: var(--text-muted); }
+.doctor-status .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+/* ============ 6. 风险预测 ============ */
+.risk-form-card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.risk-section-title { font-size: 15px; font-weight: 600; margin: 4px 0 14px; display: flex; align-items: center; gap: 8px; }
+.risk-section-title::before { content: ''; width: 4px; height: 15px; border-radius: 2px; background: var(--primary-color); }
+.risk-result { background: #fff; border-radius: 12px; padding: 22px; margin-bottom: 16px; text-align: center; }
+.risk-gauge { position: relative; width: 150px; height: 150px; margin: 0 auto 16px; }
+.risk-gauge svg { transform: rotate(-90deg); }
+.risk-gauge-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.risk-gauge-score { font-size: 32px; font-weight: 700; line-height: 1; }
+.risk-gauge-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.risk-level { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 20px; font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+.risk-level.low { background: var(--secondary-light); color: var(--secondary-dark); }
+.risk-level.mid { background: var(--accent-light); color: var(--accent-dark); }
+.risk-level.high { background: #FFEBEE; color: #C62828; }
+.risk-message { font-size: 14px; color: var(--text-secondary); line-height: 1.75; }
+.risk-factors { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+.risk-advice { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.risk-advice-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px dashed var(--border-light); font-size: 14px; line-height: 1.75; color: var(--text-secondary); }
+.risk-advice-item:last-child { border-bottom: none; }
+.risk-advice-num {
+  width: 20px; height: 20px; border-radius: 50%; background: var(--primary-light); color: var(--primary-dark);
+  font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 3px;
+}
+.risk-history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-light); font-size: 13px; }
+.risk-history-item:last-child { border-bottom: none; }
+
+/* ============ 7. 生活方案 ============ */
+.plan-tabs { display: flex; gap: 8px; background: #fff; border-radius: 12px; padding: 6px; margin-bottom: 16px; }
+.plan-tab {
+  flex: 1; padding: 10px; text-align: center; font-size: 14px; font-weight: 500;
+  color: var(--text-secondary); border-radius: 8px; cursor: pointer; transition: all .2s; background: none;
+}
+.plan-tab.active { background: var(--primary-color); color: #fff; }
+.plan-tab .count { font-size: 11px; opacity: .85; margin-left: 3px; }
+.plan-item {
+  display: flex; gap: 12px; background: #fff; border-radius: 12px; padding: 14px;
+  margin-bottom: 10px; transition: all .2s;
+}
+.plan-item.done { background: #F1F8E9; }
+.plan-check {
+  width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border-color);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  flex-shrink: 0; margin-top: 2px; transition: all .2s; background: #fff;
+}
+.plan-check.checked { background: var(--secondary-color); border-color: var(--secondary-color); }
+.plan-check svg { width: 14px; height: 14px; color: #fff; opacity: 0; }
+.plan-check.checked svg { opacity: 1; }
+.plan-body { flex: 1; min-width: 0; }
+.plan-time { font-size: 12px; color: var(--primary-color); font-weight: 500; margin-bottom: 3px; }
+.plan-title { font-size: 15px; font-weight: 500; margin-bottom: 5px; }
+.plan-item.done .plan-title { text-decoration: line-through; color: var(--text-muted); }
+.plan-content { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+.plan-stats { display: flex; gap: 10px; margin-bottom: 16px; }
+.plan-stat { flex: 1; background: #fff; border-radius: 12px; padding: 14px; text-align: center; }
+.plan-stat-value { font-size: 22px; font-weight: 700; color: var(--primary-color); line-height: 1.2; }
+.plan-stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* ============ 8. 打卡记录与分析 ============ */
+.checkin-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 16px; }
+.checkin-day {
+  background: #fff; border-radius: 10px; padding: 10px 4px; text-align: center;
+  border: 1px solid var(--border-light);
+}
+.checkin-day.today { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(33, 150, 243, .12); }
+.checkin-day-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+.checkin-day-ring {
+  width: 30px; height: 30px; margin: 0 auto; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;
+  background: var(--bg-gray); color: var(--text-muted);
+}
+.checkin-day-ring.some { background: var(--primary-light); color: var(--primary-dark); }
+.checkin-day-ring.full { background: var(--secondary-color); color: #fff; }
+.checkin-day-count { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+.analysis-card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.analysis-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+.analysis-metric { text-align: center; }
+.analysis-metric-value { font-size: 24px; font-weight: 700; color: var(--primary-color); line-height: 1.2; }
+.analysis-metric-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.bar-label { width: 64px; font-size: 13px; color: var(--text-secondary); flex-shrink: 0; }
+.bar-track { flex: 1; height: 10px; background: var(--bg-gray); border-radius: 5px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); transition: width .6s ease; }
+.bar-value { width: 42px; text-align: right; font-size: 13px; font-weight: 600; color: var(--text-primary); flex-shrink: 0; }
+
+/* ============ 9. 健康资讯 ============ */
+.news-tags { display: flex; gap: 8px; overflow-x: auto; padding: 12px 0; }
+.news-tag {
+  flex-shrink: 0; padding: 7px 16px; font-size: 13px; border-radius: 16px;
+  background: #fff; color: var(--text-secondary); border: 1px solid var(--border-color);
+  cursor: pointer; transition: all .2s; white-space: nowrap;
+}
+.news-tag.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+.news-card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all .2s; }
+.news-card:hover { box-shadow: var(--shadow-md); }
+.news-card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; line-height: 1.5; }
+.news-card-excerpt { font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.news-card-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-muted); }
+.collect-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-muted); background: none; border: none; cursor: pointer; }
+.collect-btn.active { color: var(--accent-color); }
+
+/* ============ 10. 个人中心 ============ */
+.profile-header { background: linear-gradient(135deg, #2196F3 0%, #4CAF50 100%); padding: 28px 0 40px; }
+.profile-card {
+  background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 4px 20px rgba(0, 0, 0, .1);
+  display: flex; align-items: center; gap: 18px; position: relative; margin-top: 40px;
+}
+.profile-avatar {
+  width: 72px; height: 72px; border-radius: 50%; background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center; color: var(--primary-color);
+  font-size: 28px; font-weight: 600; flex-shrink: 0; border: 3px solid #fff; position: relative;
+}
+.avatar-edit-btn {
+  position: absolute; bottom: 0; right: 0; width: 24px; height: 24px; background: var(--primary-color);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: 2px solid #fff;
+}
+.avatar-edit-btn svg { width: 12px; height: 12px; color: #fff; }
+.profile-info { flex: 1; min-width: 0; }
+.profile-name { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.profile-role { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+.profile-stats { display: flex; gap: 22px; }
+.stat-item { text-align: center; }
+.stat-value { font-size: 18px; font-weight: 600; color: var(--primary-color); }
+.stat-label { font-size: 11px; color: var(--text-muted); }
+.edit-profile-btn {
+  position: absolute; top: 16px; right: 16px; padding: 6px 14px; font-size: 13px;
+  color: var(--primary-color); background: var(--primary-light); border-radius: 20px;
+  cursor: pointer; transition: all .2s; border: none;
+}
+.edit-profile-btn:hover { background: var(--primary-color); color: #fff; }
+.menu-section { padding: 12px 0; }
+.menu-section .section-title { margin-bottom: 10px; padding-left: 4px; font-size: 15px; }
+.menu-list { background: #fff; border-radius: 12px; overflow: hidden; }
+.menu-item { display: flex; align-items: center; padding: 15px 16px; border-bottom: 1px solid var(--border-light); cursor: pointer; transition: background .2s; }
+.menu-item:last-child { border-bottom: none; }
+.menu-item:hover { background: var(--bg-gray); }
+.menu-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0; }
+.menu-icon.blue { background: #E3F2FD; color: #2196F3; }
+.menu-icon.green { background: #E8F5E9; color: #4CAF50; }
+.menu-icon.orange { background: #FFF3E0; color: #FF9800; }
+.menu-icon.purple { background: #F3E5F5; color: #9C27B0; }
+.menu-icon.red { background: #FFEBEE; color: #F44336; }
+.menu-icon.teal { background: #E0F2F1; color: #009688; }
+.menu-content { flex: 1; min-width: 0; }
+.menu-title { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
+.menu-desc { font-size: 12px; color: var(--text-muted); }
+.menu-arrow { width: 20px; height: 20px; color: var(--text-muted); flex-shrink: 0; }
+.menu-badge { padding: 2px 8px; font-size: 11px; color: #fff; background: var(--error-color); border-radius: 10px; margin-right: 10px; }
+.logout-btn {
+  width: 100%; padding: 14px; background: #fff; border-radius: 12px; font-size: 15px;
+  font-weight: 500; color: var(--error-color); text-align: center; cursor: pointer;
+  transition: all .2s; border: none;
+}
+.logout-btn:hover { background: #FFEBEE; }
+
+/* ============ 11. 智能管理 ============ */
+.admin-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.admin-stat { background: #fff; border-radius: 12px; padding: 16px; text-align: center; }
+.admin-stat-value { font-size: 22px; font-weight: 700; color: var(--primary-color); line-height: 1.2; }
+.admin-stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.admin-chat { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+.admin-chat-messages { height: 320px; overflow-y: auto; padding: 16px; background: var(--bg-color); display: flex; flex-direction: column; gap: 12px; }
+.admin-toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ============ 12. 帮助中心 ============ */
+.faq-item { background: #fff; border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+.faq-question { display: flex; align-items: center; justify-content: space-between; padding: 16px; font-size: 15px; font-weight: 500; cursor: pointer; }
+.faq-question svg { transition: transform .25s; flex-shrink: 0; color: var(--text-muted); }
+.faq-item.open .faq-question svg { transform: rotate(180deg); }
+.faq-answer { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+.faq-item.open .faq-answer { max-height: 600px; }
+.faq-answer-inner { padding: 0 16px 16px; font-size: 14px; line-height: 1.85; color: var(--text-secondary); }
+
+/* ============ 13. 通用页面小节 ============ */
+.filter-bar { display: flex; gap: 8px; overflow-x: auto; padding: 12px 0; }
+.filter-chip {
+  flex-shrink: 0; padding: 6px 14px; font-size: 13px; border-radius: 14px; background: #fff;
+  border: 1px solid var(--border-color); color: var(--text-secondary); cursor: pointer; white-space: nowrap;
+}
+.filter-chip.active { background: var(--primary-color); border-color: var(--primary-color); color: #fff; }
+
+/* ============ 14. 响应式补充 ============ */
+@media (max-width: 768px) {
+  .profile-card { flex-direction: column; text-align: center; padding: 20px; }
+  .profile-stats { justify-content: center; }
+  .analysis-metrics { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .admin-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .checkin-week { gap: 4px; }
+}
+@media (max-width: 480px) {
+  .auth-card { padding: 22px 18px; }
+  .auth-title { font-size: 20px; }
+  .profile-avatar { width: 64px; height: 64px; font-size: 24px; }
+  .doctor-avatar { width: 48px; height: 48px; font-size: 19px; }
+  .analysis-metric-value, .admin-stat-value { font-size: 20px; }
+}
