@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人中心 - 糖尿病预治智能助手</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <nav id="dpaNavbar"></nav>
+
+  <main class="page">
+    <div class="profile-header">
+      <div class="container">
+        <div class="profile-card">
+          <div class="profile-avatar">
+            <span id="avatarText">U</span>
+            <button class="avatar-edit-btn" id="avatarEdit" aria-label="编辑资料">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+          </div>
+          <div class="profile-info">
+            <h2 class="profile-name" id="profileName">加载中...</h2>
+            <p class="profile-role" id="profileRole">普通用户</p>
+            <div class="profile-stats">
+              <div class="stat-item"><div class="stat-value" id="statCheckin">0</div><div class="stat-label">累计打卡</div></div>
+              <div class="stat-item"><div class="stat-value" id="statPlan">0</div><div class="stat-label">方案条数</div></div>
+              <div class="stat-item"><div class="stat-value" id="statCollect">0</div><div class="stat-label">收藏文章</div></div>
+            </div>
+          </div>
+          <button class="edit-profile-btn" id="editProfileBtn">编辑资料</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="menu-section">
+      <div class="container">
+        <h2 class="section-title">我的服务</h2>
+        <div class="menu-list">
+          <div class="menu-item" data-href="life-plan.html">
+            <div class="menu-icon green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+            <div class="menu-content"><div class="menu-title">生活方案</div><div class="menu-desc">查看您的饮食运动健康方案</div></div>
+            <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+          <div class="menu-item" data-href="risk-prediction.html">
+            <div class="menu-icon blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+            <div class="menu-content"><div class="menu-title">风险预测</div><div class="menu-desc">评估您的糖尿病风险等级</div></div>
+            <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+          <div class="menu-item" data-href="health-news.html">
+            <div class="menu-icon purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="12" x2="11" y2="12"/></svg></div>
+            <div class="menu-content"><div class="menu-title">我的资讯</div><div class="menu-desc">收藏的健康知识与文章</div></div>
+            <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+          <div class="menu-item" data-href="checkin.html">
+            <div class="menu-icon orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg></div>
+            <div class="menu-content"><div class="menu-title">打卡记录</div><div class="menu-desc">记录每日健康数据并查看分析</div></div>
+            <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+          <div class="menu-item" data-href="help.html">
+            <div class="menu-icon teal"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div class="menu-content"><div class="menu-title">帮助中心</div><div class="menu-desc">常见问题与使用指南</div></div>
+            <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="menu-section hidden" id="adminSection">
+      <div class="container">
+        <h2 class="section-title">管理功能</h2>
+        <div class="menu-list">
+          <div class="menu-item" data-href="admin.html">
+            <div class="menu-icon purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div class="menu-content"><div class="menu-title">AI 智能管理</div><div class="menu-desc">自然语言管理平台数据</div></div>
+            <span class="menu-badge">管理员</span>
+            <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="menu-section">
+      <div class="container">
+        <h2 class="section-title">更多</h2>
+        <div class="menu-list">
+          <div class="menu-item" id="aboutBtn">
+            <div class="menu-icon red"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>
+            <div class="menu-content"><div class="menu-title">关于</div><div class="menu-desc">版本信息与服务协议</div></div>
+            <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="menu-section">
+      <div class="container"><button class="logout-btn" id="logoutBtn">退出登录</button></div>
+    </div>
+  </main>
+
+  <nav id="dpaBottomNav"></nav>
+
+  <script src="js/config.js"></script>
+  <script src="js/seed.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/pages/personal.js"></script>
+</body>
+</html>
