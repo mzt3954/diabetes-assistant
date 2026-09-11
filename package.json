@@ -1,4 +1,20 @@
 {
   "name": "ai",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "description": "> 基于 **DeepSeek 大模型 + Dify LLM 应用平台** 的一站式糖尿病预防与治疗健康管理平台 > 版本 v2.0.0 ｜ 纯静态前端（零构建、零依赖）｜ 双模式运行（在线 AI ⇄ 本地降级）",
+  "main": "playwright.config.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "jsdom": "^24.1.3"
+  }
 }
