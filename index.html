@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="糖尿病预治智能助手 - 一站式糖尿病健康管理平台">
+  <title>糖尿病预治智能助手 - 登录</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    /* 登录页面专用样式 */
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #E8F5E9 100%);
+      padding: 20px;
+    }
+    
+    .auth-container {
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    .auth-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .auth-logo {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(33, 150, 243, 0.3);
+    }
+    
+    .auth-logo svg {
+      width: 40px;
+      height: 40px;
+      fill: white;
+    }
+    
+    .auth-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .auth-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .auth-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 32px;
+    }
+    
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .auth-tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all var(--transition-fast);
+    }
+    
+    .auth-tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+    
+    .auth-form {
+      display: none;
+    }
+    
+    .auth-form.active {
+      display: block;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    
+    .form-input-wrapper {
+      position: relative;
+    }
+    
+    .form-input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      color: var(--text-muted);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 12px 14px 12px 44px;
+      font-size: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      transition: all var(--transition-fast);
+    }
+    
+    .form-input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+    }
+    
+    .form-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .form-checkbox input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary-color);
+    }
+    
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      margin-top: 8px;
+    }
+    
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+    }
+    
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+    
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .form-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    
+    .form-footer a {
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+    
+    .error-message {
+      color: var(--error-color);
+      font-size: 13px;
+      margin-top: 6px;
+      display: none;
+    }
+    
+    .error-message.show {
+      display: block;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    
+    /* 加载状态 */
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* 响应式 */
+    @media (max-width: 480px) {
+      .auth-card {
+        padding: 24px;
+      }
+      
+      .auth-title {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-container">
+      <!-- 头部Logo和标题 -->
+      <div class="auth-header">
+        <div class="auth-logo">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+        </div>
+        <h1 class="auth-title">糖尿病预治智能助手</h1>
+        <p class="auth-subtitle">一站式糖尿病健康管理平台</p>
+      </div>
+      
+      <!-- 登录/注册卡片 -->
+      <div class="auth-card">
+        <!-- 标签切换 -->
+        <div class="auth-tabs">
+          <div class="auth-tab active" data-tab="login">登录</div>
+          <div class="auth-tab" data-tab="register">注册</div>
+        </div>
+        
+        <!-- 登录表单 -->
+        <form class="auth-form active" id="loginForm">
+          <div class="form-group">
+            <label class="form-label">用户名</label>
+            <div class="form-input-wrapper">
+              <svg class="form-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <input type="text" class="form-input" id="loginUsername" placeholder="请输入用户名" required>
+            </div>
+            <div class="error-message" id="loginUsernameError"></div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">密码</label>
+            <div class="form-input-wrapper">
+              <svg class="form-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input type="password" class="form-input" id="loginPassword" placeholder="请输入密码" required>
+              <span class="password-toggle" data-target="loginPassword">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </span>
+            </div>
+            <div class="error-message" id="loginPasswordError"></div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-checkbox">
+              <input type="checkbox" id="rememberMe" checked>
+              <span>记住我</span>
+            </label>
+          </div>
+          
+          <button type="submit" class="btn-submit" id="loginBtn">
+            <span class="btn-text">登录</span>
+            <span class="loading-spinner hidden"></span>
+          </button>
+          
+          <div class="form-footer">
+            还没有账号？<a href="#" id="goToRegister">立即注册</a>
+          </div>
+        </form>
+        
+        <!-- 注册表单 -->
+        <form class="auth-form" id="registerForm">
+          <div class="form-group">
+            <label class="form-label">用户名</label>
+            <div class="form-input-wrapper">
+              <svg class="form-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <input type="text" class="form-input" id="registerUsername" placeholder="请输入用户名" required>
+            </div>
+            <div class="error-message" id="registerUsernameError"></div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">密码</label>
+            <div class="form-input-wrapper">
+              <svg class="form-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input type="password" class="form-input" id="registerPassword" placeholder="请输入密码" required>
+              <span class="password-toggle" data-target="registerPassword">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </span>
+            </div>
+            <div class="error-message" id="registerPasswordError"></div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">确认密码</label>
+            <div class="form-input-wrapper">
+              <svg class="form-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input type="password" class="form-input" id="registerConfirmPassword" placeholder="请再次输入密码" required>
+            </div>
+            <div class="error-message" id="registerConfirmPasswordError"></div>
+          </div>
+          
+          <button type="submit" class="btn-submit" id="registerBtn">
+            <span class="btn-text">注册</span>
+            <span class="loading-spinner hidden"></span>
+          </button>
+          
+          <div class="form-footer">
+            已有账号？<a href="#" id="goToLogin">立即登录</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // DOM元素
+    const tabs = document.querySelectorAll('.auth-tab');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const goToRegister = document.getElementById('goToRegister');
+    const goToLogin = document.getElementById('goToLogin');
+    const passwordToggles = document.querySelectorAll('.password-toggle');
+    
+    // 用户数据存储（模拟数据库）
+    const getUsers = () => {
+      const users = localStorage.getItem('diabetes_users');
+      return users ? JSON.parse(users) : [
+        { username: 'admin', password: 'admin123', avatar: null, isAdmin: true },
+        { username: 'user', password: 'user123', avatar: null, isAdmin: false }
+      ];
+    };
+    
+    const saveUsers = (users) => {
+      localStorage.setItem('diabetes_users', JSON.stringify(users));
+    };
+    
+    // 初始化用户数据
+    if (!localStorage.getItem('diabetes_users')) {
+      saveUsers(getUsers());
+    }
+    
+    // 标签切换
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.tab;
+        
+        // 更新标签状态
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        // 切换表单
+        if (target === 'login') {
+          loginForm.classList.add('active');
+          registerForm.classList.remove('active');
+        } else {
+          loginForm.classList.remove('active');
+          registerForm.classList.add('active');
+        }
+        
+        // 清除错误信息
+        clearErrors();
+      });
+    });
+    
+    // 快捷切换
+    goToRegister.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelector('[data-tab="register"]').click();
+    });
+    
+    goToLogin.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelector('[data-tab="login"]').click();
+    });
+    
+    // 密码显示/隐藏
+    passwordToggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const targetId = toggle.dataset.target;
+        const input = document.getElementById(targetId);
+        
+        if (input.type === 'password') {
+          input.type = 'text';
+          toggle.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          `;
+        } else {
+          input.type = 'password';
+          toggle.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          `;
+        }
+      });
+    });
+    
+    // 清除错误信息
+    function clearErrors() {
+      document.querySelectorAll('.error-message').forEach(el => {
+        el.textContent = '';
+        el.classList.remove('show');
+      });
+      document.querySelectorAll('.form-input').forEach(el => {
+        el.classList.remove('error');
+      });
+    }
+    
+    // 显示错误
+    function showError(elementId, message) {
+      const errorEl = document.getElementById(elementId);
+      if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.classList.add('show');
+        errorEl.previousElementSibling.querySelector('.form-input')?.classList.add('error');
+      }
+    }
+    
+    // 表单验证
+    function validateLoginForm() {
+      clearErrors();
+      let isValid = true;
+      
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      
+      if (!username) {
+        showError('loginUsernameError', '请输入用户名');
+        isValid = false;
+      }
+      
+      if (!password) {
+        showError('loginPasswordError', '请输入密码');
+        isValid = false;
+      } else if (password.length < 6) {
+        showError('loginPasswordError', '密码长度不能少于6位');
+        isValid = false;
+      }
+      
+      return isValid;
+    }
+    
+    function validateRegisterForm() {
+      clearErrors();
+      let isValid = true;
+      
+      const username = document.getElementById('registerUsername').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      const confirmPassword = document.getElementById('registerConfirmPassword').value;
+      
+      if (!username) {
+        showError('registerUsernameError', '请输入用户名');
+        isValid = false;
+      } else if (username.length < 3) {
+        showError('registerUsernameError', '用户名长度不能少于3位');
+        isValid = false;
+      }
+      
+      if (!password) {
+        showError('registerPasswordError', '请输入密码');
+        isValid = false;
+      } else if (password.length < 6) {
+        showError('registerPasswordError', '密码长度不能少于6位');
+        isValid = false;
+      }
+      
+      if (!confirmPassword) {
+        showError('registerConfirmPasswordError', '请确认密码');
+        isValid = false;
+      } else if (password !== confirmPassword) {
+        showError('registerConfirmPasswordError', '两次输入的密码不一致');
+        isValid = false;
+      }
+      
+      return isValid;
+    }
+    
+    // 登录
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      if (!validateLoginForm()) return;
+      
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const rememberMe = document.getElementById('rememberMe').checked;
+      
+      const loginBtn = document.getElementById('loginBtn');
+      const btnText = loginBtn.querySelector('.btn-text');
+      const spinner = loginBtn.querySelector('.loading-spinner');
+      
+      // 显示加载状态
+      btnText.textContent = '登录中...';
+      spinner.classList.remove('hidden');
+      loginBtn.disabled = true;
+      
+      // 模拟登录请求
+      setTimeout(() => {
+        const users = getUsers();
+        const user = users.find(u => u.username === username && u.password === password);
+        
+        if (user) {
+          // 登录成功
+          const userData = {
+            username: user.username,
+            avatar: user.avatar,
+            isAdmin: user.isAdmin || false,
+            loginTime: new Date().toISOString()
+          };
+          
+          if (rememberMe) {
+            localStorage.setItem('diabetes_current_user', JSON.stringify(userData));
+          } else {
+            sessionStorage.setItem('diabetes_current_user', JSON.stringify(userData));
+          }
+          
+          // 跳转到首页
+          window.location.href = 'home.html';
+        } else {
+          // 登录失败
+          showError('loginPasswordError', '用户名或密码错误');
+          btnText.textContent = '登录';
+          spinner.classList.add('hidden');
+          loginBtn.disabled = false;
+        }
+      }, 800);
+    });
+    
+    // 注册
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      if (!validateRegisterForm()) return;
+      
+      const username = document.getElementById('registerUsername').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      
+      const registerBtn = document.getElementById('registerBtn');
+      const btnText = registerBtn.querySelector('.btn-text');
+      const spinner = registerBtn.querySelector('.loading-spinner');
+      
+      // 显示加载状态
+      btnText.textContent = '注册中...';
+      spinner.classList.remove('hidden');
+      registerBtn.disabled = true;
+      
+      // 模拟注册请求
+      setTimeout(() => {
+        const users = getUsers();
+        
+        // 检查用户名是否已存在
+        if (users.find(u => u.username === username)) {
+          showError('registerUsernameError', '用户名已存在');
+          btnText.textContent = '注册';
+          spinner.classList.add('hidden');
+          registerBtn.disabled = false;
+          return;
+        }
+        
+        // 创建新用户
+        const newUser = {
+          username,
+          password,
+          avatar: null,
+          isAdmin: false,
+          createTime: new Date().toISOString()
+        };
+        
+        users.push(newUser);
+        saveUsers(users);
+        
+        // 自动登录并跳转
+        const userData = {
+          username: newUser.username,
+          avatar: newUser.avatar,
+          isAdmin: newUser.isAdmin,
+          loginTime: new Date().toISOString()
+        };
+        
+        localStorage.setItem('diabetes_current_user', JSON.stringify(userData));
+        window.location.href = 'home.html';
+      }, 800);
+    });
+    
+    // 检查是否已登录
+    function checkLoginStatus() {
+      const user = localStorage.getItem('diabetes_current_user') || sessionStorage.getItem('diabetes_current_user');
+      if (user) {
+        window.location.href = 'home.html';
+      }
+    }
+    
+    // 页面加载时检查登录状态
+    checkLoginStatus();
+  </script>
+</body>
+</html>

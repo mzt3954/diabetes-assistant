@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>糖尿病预治智能助手 - 首页</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    /* 首页专用样式 */
+    .home-page {
+      padding-top: 56px;
+      padding-bottom: 72px;
+      min-height: 100vh;
+    }
+    
+    /* 顶部导航栏 */
+    .navbar {
+      background: white;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+    
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+    
+    .navbar-brand img {
+      height: 32px;
+    }
+    
+    .navbar-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .navbar-item {
+      padding: 8px 16px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    
+    .navbar-item:hover,
+    .navbar-item.active {
+      color: var(--primary-color);
+      background: var(--primary-light);
+    }
+    
+    .navbar-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .navbar-user:hover {
+      background: var(--bg-gray);
+    }
+    
+    .navbar-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-color);
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .navbar-username {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+    
+    /* 轮播图 */
+    .banner-section {
+      padding: 16px;
+    }
+    
+    .banner {
+      position: relative;
+      width: 100%;
+      height: 180px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #2196F3 0%, #4CAF50 100%);
+    }
+    
+    .banner-slides {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.5s ease;
+    }
+    
+    .banner-slide {
+      min-width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: white;
+      text-align: center;
+    }
+    
+    .banner-slide:nth-child(1) {
+      background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    }
+    
+    .banner-slide:nth-child(2) {
+      background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+    }
+    
+    .banner-slide:nth-child(3) {
+      background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    }
+    
+    .banner-content h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .banner-content p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    .banner-dots {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+    }
+    
+    .banner-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .banner-dot.active {
+      background: white;
+      width: 20px;
+      border-radius: 4px;
+    }
+    
+    /* 功能入口 */
+    .quick-entry {
+      padding: 16px;
+    }
+    
+    .entry-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    
+    .entry-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .entry-item:hover {
+      background: var(--bg-gray);
+    }
+    
+    .entry-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .entry-icon.blue {
+      background: #E3F2FD;
+      color: #2196F3;
+    }
+    
+    .entry-icon.green {
+      background: #E8F5E9;
+      color: #4CAF50;
+    }
+    
+    .entry-icon.orange {
+      background: #FFF3E0;
+      color: #FF9800;
+    }
+    
+    .entry-icon.purple {
+      background: #F3E5F5;
+      color: #9C27B0;
+    }
+    
+    .entry-text {
+      font-size: 13px;
+      color: var(--text-primary);
+      text-align: center;
+    }
+    
+    /* 文章科普 */
+    .section {
+      padding: 16px;
+    }
+    
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .section-more {
+      font-size: 14px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .article-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .article-card {
+      display: flex;
+      gap: 12px;
+      background: white;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+    }
+    
+    .article-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+    
+    .article-cover {
+      width: 100px;
+      height: 80px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: var(--bg-gray);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    
+    .article-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .article-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .article-views {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    /* 糖尿病类型 */
+    .type-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .type-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .type-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    
+    .type-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+    
+    .type-icon.type1 {
+      background: #FFEBEE;
+      color: #F44336;
+    }
+    
+    .type-icon.type2 {
+      background: #E3F2FD;
+      color: #2196F3;
+    }
+    
+    .type-icon.gestational {
+      background: #F3E5F5;
+      color: #9C27B0;
+    }
+    
+    .type-icon.special {
+      background: #FFF3E0;
+      color: #FF9800;
+    }
+    
+    .type-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .type-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    /* 底部导航栏 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: white;
+      box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 100;
+    }
+    
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 16px;
+      color: var(--text-muted);
+      font-size: 11px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    
+    .bottom-nav-item.active {
+      color: var(--primary-color);
+    }
+    
+    .bottom-nav-item svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    /* 用户下拉菜单 */
+    .user-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 8px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow-lg);
+      min-width: 160px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.2s;
+    }
+    
+    .user-dropdown.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    
+    .dropdown-item {
+      padding: 10px 16px;
+      font-size: 14px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .dropdown-item:hover {
+      background: var(--bg-gray);
+    }
+    
+    .dropdown-item:first-child {
+      border-radius: 8px 8px 0 0;
+    }
+    
+    .dropdown-item:last-child {
+      border-radius: 0 0 8px 8px;
+    }
+    
+    .dropdown-divider {
+      height: 1px;
+      background: var(--border-color);
+      margin: 4px 0;
+    }
+    
+    .dropdown-item.logout {
+      color: var(--error-color);
+    }
+    
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .navbar-menu {
+        display: none;
+      }
+      
+      .entry-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      
+      .type-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .entry-grid {
+        padding: 12px;
+      }
+      
+      .entry-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+      
+      .entry-text {
+        font-size: 12px;
+      }
+      
+      .banner {
+        height: 150px;
+      }
+      
+      .banner-content h2 {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="home-page">
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+      <div class="container">
+        <div class="flex items-center justify-between">
+          <a href="home.html" class="navbar-brand">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <span>糖尿病助手</span>
+          </a>
+          
+          <div class="navbar-menu">
+            <a href="home.html" class="navbar-item active">首页</a>
+            <a href="health-news.html" class="navbar-item">健康资讯</a>
+            <a href="doctor.html" class="navbar-item">医师咨询</a>
+            <a href="assistant.html" class="navbar-item">智能助手</a>
+          </div>
+          
+          <div class="relative">
+            <div class="navbar-user" id="userMenuTrigger">
+              <div class="navbar-avatar" id="userAvatar">U</div>
+              <span class="navbar-username" id="userName">用户</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </div>
+            <div class="user-dropdown" id="userDropdown">
+              <div class="dropdown-item" onclick="location.href='personal.html'">个人中心</div>
+              <div class="dropdown-item" onclick="location.href='life-plan.html'">我的方案</div>
+              <div class="dropdown-item" onclick="location.href='checkin.html'">打卡记录</div>
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-item logout" onclick="logout()">退出登录</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    
+    <!-- 轮播图 -->
+    <section class="banner-section">
+      <div class="container">
+        <div class="banner">
+          <div class="banner-slides" id="bannerSlides">
+            <div class="banner-slide">
+              <div class="banner-content">
+                <h2>了解糖尿病</h2>
+                <p>科学认识糖尿病，预防从现在开始</p>
+              </div>
+            </div>
+            <div class="banner-slide">
+              <div class="banner-content">
+                <h2>智能风险预测</h2>
+                <p>AI评估您的糖尿病风险，早发现早干预</p>
+              </div>
+            </div>
+            <div class="banner-slide">
+              <div class="banner-content">
+                <h2>个性化生活方案</h2>
+                <p>专属饮食运动方案，助力健康管理</p>
+              </div>
+            </div>
+          </div>
+          <div class="banner-dots">
+            <div class="banner-dot active" data-index="0"></div>
+            <div class="banner-dot" data-index="1"></div>
+            <div class="banner-dot" data-index="2"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 快捷入口 -->
+    <section class="quick-entry">
+      <div class="container">
+        <div class="entry-grid">
+          <div class="entry-item" onclick="location.href='risk-prediction.html'">
+            <div class="entry-icon blue">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+            </div>
+            <span class="entry-text">风险预测</span>
+          </div>
+          <div class="entry-item" onclick="location.href='life-plan.html'">
+            <div class="entry-icon green">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+            </div>
+            <span class="entry-text">生活方案</span>
+          </div>
+          <div class="entry-item" onclick="location.href='doctor.html'">
+            <div class="entry-icon orange">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <span class="entry-text">医师咨询</span>
+          </div>
+          <div class="entry-item" onclick="location.href='assistant.html'">
+            <div class="entry-icon purple">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <span class="entry-text">AI助手</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 文章科普 -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">健康科普</h2>
+          <a href="health-news.html" class="section-more">
+            查看更多
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </a>
+        </div>
+        <div class="article-list" id="articleList">
+          <!-- 文章列表由JavaScript动态生成 -->
+        </div>
+      </div>
+    </section>
+    
+    <!-- 糖尿病类型 -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">糖尿病类型</h2>
+        </div>
+        <div class="type-list">
+          <div class="type-card" onclick="showTypeDetail('1型糖尿病')">
+            <div class="type-icon type1">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <h3 class="type-name">1型糖尿病</h3>
+            <p class="type-desc">胰岛素依赖型，多发于青少年，需要终身注射胰岛素</p>
+          </div>
+          <div class="type-card" onclick="showTypeDetail('2型糖尿病')">
+            <div class="type-icon type2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v8M8 12h8"/>
+              </svg>
+            </div>
+            <h3 class="type-name">2型糖尿病</h3>
+            <p class="type-desc">最常见类型，与生活方式密切相关，可通过饮食运动控制</p>
+          </div>
+          <div class="type-card" onclick="showTypeDetail('妊娠型糖尿病')">
+            <div class="type-icon gestational">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <h3 class="type-name">妊娠型糖尿病</h3>
+            <p class="type-desc">孕期首次发现，产后多数可恢复，需密切关注</p>
+          </div>
+          <div class="type-card" onclick="showTypeDetail('特殊型糖尿病')">
+            <div class="type-icon special">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </div>
+            <h3 class="type-name">特殊型糖尿病</h3>
+            <p class="type-desc">由其他疾病或药物引起，需针对原发病治疗</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+  <!-- 底部导航栏 -->
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>首页</span>
+    </a>
+    <a href="health-news.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      <span>资讯</span>
+    </a>
+    <a href="assistant.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span>助手</span>
+    </a>
+    <a href="personal.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>我的</span>
+    </a>
+  </nav>
+  
+  <script>
+    // 模拟文章数据
+    const articles = [
+      {
+        id: 1,
+        title: '糖尿病患者饮食指南：如何科学搭配一日三餐',
+        author: '营养科',
+        publishTime: '2024-01-15',
+        views: 1256,
+        category: '饮食指导'
+      },
+      {
+        id: 2,
+        title: '运动与血糖：糖尿病患者的最佳运动方案',
+        author: '康复科',
+        publishTime: '2024-01-12',
+        views: 983,
+        category: '运动指南'
+      },
+      {
+        id: 3,
+        title: '血糖监测的正确方法和时间点',
+        author: '内分泌科',
+        publishTime: '2024-01-10',
+        views: 1542,
+        category: '糖尿病科普'
+      }
+    ];
+    
+    // 渲染文章列表
+    function renderArticles() {
+      const container = document.getElementById('articleList');
+      container.innerHTML = articles.map(article => `
+        <div class="article-card" onclick="viewArticle(${article.id})">
+          <div class="article-cover">${article.category}</div>
+          <div class="article-info">
+            <h3 class="article-title">${article.title}</h3>
+            <div class="article-meta">
+              <span>${article.author}</span>
+              <span>${article.publishTime}</span>
+              <span class="article-views">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                ${article.views}
+              </span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // 查看文章详情
+    function viewArticle(id) {
+      // 存储文章ID并跳转
+      localStorage.setItem('current_article_id', id);
+      location.href = 'health-news.html';
+    }
+    
+    // 显示糖尿病类型详情
+    function showTypeDetail(typeName) {
+      localStorage.setItem('current_diabetes_type', typeName);
+      // 可以跳转到详情页面或弹出模态框
+      alert(`即将查看${typeName}详细信息`);
+    }
+    
+    // 轮播图自动播放
+    let currentSlide = 0;
+    const totalSlides = 3;
+    
+    function goToSlide(index) {
+      currentSlide = index;
+      const slides = document.getElementById('bannerSlides');
+      slides.style.transform = `translateX(-${index * 100}%)`;
+      
+      // 更新圆点状态
+      document.querySelectorAll('.banner-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+    }
+    
+    function nextSlide() {
+      goToSlide((currentSlide + 1) % totalSlides);
+    }
+    
+    // 轮播图点击圆点
+    document.querySelectorAll('.banner-dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+        goToSlide(parseInt(dot.dataset.index));
+      });
+    });
+    
+    // 自动播放轮播图
+    setInterval(nextSlide, 4000);
+    
+    // 用户菜单
+    const userMenuTrigger = document.getElementById('userMenuTrigger');
+    const userDropdown = document.getElementById('userDropdown');
+    
+    userMenuTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      userDropdown.classList.toggle('show');
+    });
+    
+    document.addEventListener('click', () => {
+      userDropdown.classList.remove('show');
+    });
+    
+    // 获取当前用户信息
+    function getCurrentUser() {
+      const userStr = localStorage.getItem('diabetes_current_user') || sessionStorage.getItem('diabetes_current_user');
+      return userStr ? JSON.parse(userStr) : null;
+    }
+    
+    // 更新用户信息显示
+    function updateUserInfo() {
+      const user = getCurrentUser();
+      if (user) {
+        document.getElementById('userName').textContent = user.username;
+        document.getElementById('userAvatar').textContent = user.username.charAt(0).toUpperCase();
+      }
+    }
+    
+    // 退出登录
+    function logout() {
+      localStorage.removeItem('diabetes_current_user');
+      sessionStorage.removeItem('diabetes_current_user');
+      location.href = 'index.html';
+    }
+    
+    // 检查登录状态
+    function checkLogin() {
+      const user = getCurrentUser();
+      if (!user) {
+        location.href = 'index.html';
+      }
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      checkLogin();
+      updateUserInfo();
+      renderArticles();
+    });
+  </script>
+</body>
+</html>

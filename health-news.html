@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>糖尿病预治智能助手 - 健康资讯</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    .page-content {
+      padding-top: 56px;
+      padding-bottom: 72px;
+      min-height: 100vh;
+      background: var(--bg-color);
+    }
+    
+    .page-header {
+      background: white;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .page-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    
+    /* 标签页 */
+    .tag-tabs {
+      display: flex;
+      padding: 0 16px;
+      gap: 10px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+    
+    .tag-tab {
+      flex-shrink: 0;
+      padding: 8px 16px;
+      background: white;
+      border-radius: 20px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+    
+    .tag-tab.active {
+      background: var(--primary-light);
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    
+    .tag-tab:hover {
+      background: var(--primary-light);
+    }
+    
+    /* 文章列表 */
+    .article-list {
+      padding: 0 16px;
+    }
+    
+    .article-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .article-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    
+    .article-header {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .article-cover {
+      width: 100px;
+      height: 80px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .article-cover-icon {
+      width: 40px;
+      height: 40px;
+      color: var(--primary-color);
+    }
+    
+    .article-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .article-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .article-excerpt {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .article-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-light);
+    }
+    
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .article-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .article-meta-item svg {
+      width: 14px;
+      height: 14px;
+    }
+    
+    .article-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .article-action {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .article-action:hover {
+      background: var(--bg-gray);
+    }
+    
+    .article-action svg {
+      width: 18px;
+      height: 18px;
+      color: var(--text-muted);
+    }
+    
+    .article-action.collected svg {
+      color: var(--warning-color);
+      fill: var(--warning-color);
+    }
+    
+    /* 详情模态框 */
+    .detail-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: white;
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+    }
+    
+    .detail-modal.active {
+      display: flex;
+    }
+    
+    .detail-header {
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .detail-back {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    
+    .detail-back:hover {
+      background: var(--bg-gray);
+    }
+    
+    .detail-back svg {
+      width: 24px;
+      height: 24px;
+      color: var(--text-primary);
+    }
+    
+    .detail-title {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .detail-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    
+    .detail-content h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+    
+    .detail-content p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+    
+    .detail-content ul,
+    .detail-content ol {
+      margin-bottom: 16px;
+      padding-left: 24px;
+    }
+    
+    .detail-content li {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 8px;
+    }
+    
+    .detail-footer {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .detail-footer-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .btn-collect {
+      padding: 8px 16px;
+      background: var(--warning-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-collect:hover {
+      background: #E65100;
+    }
+    
+    .btn-collect.collected {
+      background: var(--bg-gray);
+      color: var(--text-muted);
+    }
+    
+    /* 生成按钮 */
+    .generate-section {
+      padding: 0 16px 16px;
+    }
+    
+    .btn-generate {
+      width: 100%;
+      padding: 12px;
+      background: white;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-generate:hover {
+      background: var(--primary-light);
+    }
+    
+    /* 导航栏样式 */
+    .navbar {
+      background: white;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+    
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    
+    .navbar-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+    
+    .navbar-item {
+      padding: 8px 16px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    
+    .navbar-item:hover,
+    .navbar-item.active {
+      color: var(--primary-color);
+      background: var(--primary-light);
+    }
+    
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: white;
+      box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 100;
+    }
+    
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 16px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 11px;
+      transition: color 0.2s;
+    }
+    
+    .bottom-nav-item.active {
+      color: var(--primary-color);
+    }
+    
+    .bottom-nav-item svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .navbar-menu {
+        display: none;
+      }
+      
+      .article-cover {
+        width: 80px;
+        height: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <nav class="navbar">
+    <div class="container">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <a href="home.html" class="navbar-brand">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+          <span>糖尿病助手</span>
+        </a>
+        <div class="navbar-menu">
+          <a href="home.html" class="navbar-item">首页</a>
+          <a href="health-news.html" class="navbar-item active">健康资讯</a>
+          <a href="doctor.html" class="navbar-item">医师咨询</a>
+          <a href="assistant.html" class="navbar-item">智能助手</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  
+  <div class="page-content">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1 class="page-title">健康资讯</h1>
+      <p class="page-desc">了解糖尿病相关健康知识</p>
+    </div>
+    
+    <!-- 标签页 -->
+    <div class="tag-tabs">
+      <div class="tag-tab active" data-tag="全部" onclick="switchTag('全部')">全部</div>
+      <div class="tag-tab" data-tag="饮食指导" onclick="switchTag('饮食指导')">饮食指导</div>
+      <div class="tag-tab" data-tag="运动指南" onclick="switchTag('运动指南')">运动指南</div>
+      <div class="tag-tab" data-tag="生活习惯" onclick="switchTag('生活习惯')">生活习惯</div>
+      <div class="tag-tab" data-tag="糖尿病科普" onclick="switchTag('糖尿病科普')">糖尿病科普</div>
+      <div class="tag-tab" data-tag="收藏" onclick="switchTag('收藏')">我的收藏</div>
+    </div>
+    
+    <!-- 生成按钮 -->
+    <div class="generate-section">
+      <button class="btn-generate" onclick="generateArticle()">生成健康资讯</button>
+    </div>
+    
+    <!-- 文章列表 -->
+    <div class="article-list" id="articleList">
+      <!-- 由JavaScript动态生成 -->
+    </div>
+  </div>
+  
+  <!-- 底部导航栏 -->
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>首页</span>
+    </a>
+    <a href="health-news.html" class="bottom-nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      <span>资讯</span>
+    </a>
+    <a href="assistant.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span>助手</span>
+    </a>
+    <a href="personal.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>我的</span>
+    </a>
+  </nav>
+  
+  <!-- 详情模态框 -->
+  <div class="detail-modal" id="detailModal">
+    <div class="detail-header">
+      <div class="detail-back" onclick="closeDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </div>
+      <div class="detail-title" id="detailTitle">文章标题</div>
+    </div>
+    <div class="detail-content" id="detailContent">
+      <!-- 内容由JavaScript动态生成 -->
+    </div>
+    <div class="detail-footer">
+      <div class="detail-footer-meta" id="detailMeta">作者 · 时间</div>
+      <button class="btn-collect" id="detailCollectBtn" onclick="toggleCollect()">收藏</button>
+    </div>
+  </div>
+  
+  <script>
+    // 模拟文章数据
+    const defaultArticles = [
+      {
+        id: 1,
+        title: '糖尿病患者饮食指南：如何科学搭配一日三餐',
+        excerpt: '合理的饮食结构对糖尿病患者至关重要。本文详细介绍糖尿病患者的饮食原则，包括如何选择低GI食物、控制碳水化合物摄入、合理分配三餐营养等。',
+        category: '饮食指导',
+        author: '营养科',
+        publishTime: '2024-01-15',
+        views: 1256,
+        collected: false,
+        content: `<h2>糖尿病患者饮食指南</h2>
+<p>合理的饮食结构对糖尿病患者至关重要。通过科学的饮食管理，可以有效控制血糖水平，减少并发症的发生。</p>
+<h3>1. 饮食原则</h3>
+<ul>
+<li>控制总热量摄入，维持健康体重</li>
+<li>选择低血糖生成指数（GI）食物</li>
+<li>均衡摄入碳水化合物、蛋白质和脂肪</li>
+<li>增加膳食纤维摄入</li>
+<li>定时定量，规律进餐</li>
+</ul>
+<h3>2. 食物选择建议</h3>
+<p><strong>推荐食物：</strong>全谷物、杂粮、蔬菜、豆类、鱼类、瘦肉、低脂奶制品等。</p>
+<p><strong>限制食物：</strong>精制米面、含糖饮料、甜点、油炸食品、高脂肪肉类等。</p>
+<h3>3. 三餐分配</h3>
+<p>建议早餐占全天热量的30%，午餐占40%，晚餐占30%。如有需要，可在两餐之间安排健康加餐。</p>`
+      },
+      {
+        id: 2,
+        title: '运动与血糖：糖尿病患者的最佳运动方案',
+        excerpt: '规律运动可以帮助糖尿病患者改善血糖控制、增强胰岛素敏感性。本文提供适合糖尿病患者的运动类型、强度、时间和注意事项。',
+        category: '运动指南',
+        author: '康复科',
+        publishTime: '2024-01-12',
+        views: 983,
+        collected: false,
+        content: `<h2>糖尿病患者运动指南</h2>
+<p>规律运动是糖尿病管理的重要组成部分。适当的运动可以帮助改善血糖控制，增强心肺功能，提高生活质量。</p>
+<h3>1. 运动类型</h3>
+<ul>
+<li>有氧运动：快走、慢跑、游泳、骑自行车</li>
+<li>力量训练：举重、弹力带练习</li>
+<li>柔韧性运动：瑜伽、拉伸</li>
+</ul>
+<h3>2. 运动强度</h3>
+<p>建议中等强度运动，即运动时能正常说话但不能唱歌。心率控制在最大心率的60%-70%之间。</p>
+<h3>3. 运动时间</h3>
+<p>每周至少进行150分钟的中等强度运动，分3-5天进行。避免连续两天不运动。</p>
+<h3>4. 注意事项</h3>
+<ul>
+<li>运动前检查血糖水平</li>
+<li>随身携带含糖食品以防低血糖</li>
+<li>穿着合适的鞋袜，避免足部损伤</li>
+<li>运动后检查足部是否有损伤</li>
+</ul>`
+      },
+      {
+        id: 3,
+        title: '血糖监测的正确方法和时间点',
+        excerpt: '定期监测血糖是糖尿病管理的关键。本文介绍血糖监测的正确方法、监测时间点选择以及如何解读血糖数据。',
+        category: '糖尿病科普',
+        author: '内分泌科',
+        publishTime: '2024-01-10',
+        views: 1542,
+        collected: false,
+        content: `<h2>血糖监测指南</h2>
+<p>定期监测血糖是糖尿病管理的重要环节，可以帮助患者了解血糖控制情况，及时调整治疗方案。</p>
+<h3>1. 监测时间点</h3>
+<ul>
+<li>空腹血糖：早晨起床后未进食前</li>
+<li>餐后血糖：餐后2小时</li>
+<li>睡前血糖：晚上睡觉前</li>
+<li>随机血糖：任何时间</li>
+</ul>
+<h3>2. 监测频率</h3>
+<p>根据病情和治疗方案，监测频率有所不同：</p>
+<ul>
+<li>使用胰岛素的患者：每天监测4-7次</li>
+<li>口服降糖药的患者：每周监测2-4次</li>
+<li>病情稳定的患者：每周监测1-2次</li>
+</ul>
+<h3>3. 目标值</h3>
+<p>一般建议：空腹血糖4.4-7.0mmol/L，餐后2小时血糖<10.0mmol/L。</p>`
+      },
+      {
+        id: 4,
+        title: '糖尿病并发症的预防与管理',
+        excerpt: '糖尿病并发症是导致患者生活质量下降的主要原因。了解并发症的类型、预防措施和早期症状，有助于及时干预。',
+        category: '糖尿病科普',
+        author: '内分泌科',
+        publishTime: '2024-01-08',
+        views: 1120,
+        collected: false,
+        content: `<h2>糖尿病并发症预防</h2>
+<p>长期高血糖会导致多种并发症，包括心血管疾病、肾病、视网膜病变、神经病变等。预防并发症的关键在于良好的血糖控制。</p>
+<h3>1. 主要并发症</h3>
+<ul>
+<li><strong>心血管疾病：</strong>心脏病、中风</li>
+<li><strong>肾病：</strong>糖尿病肾病</li>
+<li><strong>眼病：</strong>视网膜病变、白内障</li>
+<li><strong>神经病变：</strong>周围神经病变</li>
+<li><strong>足病：</strong>糖尿病足</li>
+</ul>
+<h3>2. 预防措施</h3>
+<ul>
+<li>严格控制血糖、血压、血脂</li>
+<li>定期进行并发症筛查</li>
+<li>戒烟限酒</li>
+<li>保持健康生活方式</li>
+</ul>`
+      },
+      {
+        id: 5,
+        title: '糖尿病患者的心理调适',
+        excerpt: '糖尿病是一种慢性疾病，患者可能面临焦虑、抑郁等心理问题。本文提供心理调适的方法和建议。',
+        category: '生活习惯',
+        author: '心理科',
+        publishTime: '2024-01-05',
+        views: 856,
+        collected: false,
+        content: `<h2>糖尿病患者心理调适</h2>
+<p>糖尿病是一种需要长期管理的慢性疾病，患者可能面临各种心理挑战。良好的心理状态对疾病管理至关重要。</p>
+<h3>1. 常见心理问题</h3>
+<ul>
+<li>焦虑：担心血糖控制、并发症</li>
+<li>抑郁：对疾病感到沮丧</li>
+<li>病耻感：对疾病感到羞耻</li>
+<li>压力：管理疾病的压力</li>
+</ul>
+<h3>2. 调适方法</h3>
+<ul>
+<li>接受疾病，积极面对</li>
+<li>学习疾病知识，增强自我管理能力</li>
+<li>寻求社会支持，与他人分享经验</li>
+<li>保持积极乐观的心态</li>
+<li>必要时寻求专业心理咨询</li>
+</ul>`
+      }
+    ];
+    
+    let articles = [];
+    let currentTag = '全部';
+    let currentArticleId = null;
+    
+    // 获取当前用户
+    function getCurrentUser() {
+      const userStr = localStorage.getItem('diabetes_current_user') || sessionStorage.getItem('diabetes_current_user');
+      return userStr ? JSON.parse(userStr) : null;
+    }
+    
+    // 加载文章数据
+    function loadArticles() {
+      const user = getCurrentUser();
+      if (!user) return;
+      
+      const savedArticles = localStorage.getItem('diabetes_articles');
+      if (savedArticles) {
+        articles = JSON.parse(savedArticles);
+      } else {
+        articles = [...defaultArticles];
+      }
+      
+      renderArticles();
+    }
+    
+    // 渲染文章列表
+    function renderArticles() {
+      const container = document.getElementById('articleList');
+      let filteredArticles = articles;
+      
+      if (currentTag === '收藏') {
+        filteredArticles = articles.filter(a => a.collected);
+      } else if (currentTag !== '全部') {
+        filteredArticles = articles.filter(a => a.category === currentTag);
+      }
+      
+      if (filteredArticles.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding: 40px 0;">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div class="empty-title">${currentTag === '收藏' ? '暂无收藏文章' : '暂无相关文章'}</div>
+            <div class="empty-desc">${currentTag === '收藏' ? '点击文章详情页的收藏按钮收藏文章' : '点击"生成健康资讯"获取个性化内容'}</div>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = filteredArticles.map(article => `
+        <div class="article-card" onclick="openDetail(${article.id})">
+          <div class="article-header">
+            <div class="article-cover">
+              <svg class="article-cover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </div>
+            <div class="article-info">
+              <div class="article-title">${article.title}</div>
+              <div class="article-excerpt">${article.excerpt}</div>
+            </div>
+          </div>
+          <div class="article-footer">
+            <div class="article-meta">
+              <span class="article-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                ${article.author}
+              </span>
+              <span class="article-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                ${article.publishTime}
+              </span>
+              <span class="article-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                ${article.views}
+              </span>
+            </div>
+            <div class="article-actions">
+              <div class="article-action ${article.collected ? 'collected' : ''}" onclick="event.stopPropagation(); toggleCollectItem(${article.id})">
+                <svg viewBox="0 0 24 24" fill="${article.collected ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // 切换标签
+    function switchTag(tag) {
+      currentTag = tag;
+      
+      document.querySelectorAll('.tag-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tag === tag);
+      });
+      
+      renderArticles();
+    }
+    
+    // 打开文章详情
+    function openDetail(articleId) {
+      currentArticleId = articleId;
+      const article = articles.find(a => a.id === articleId);
+      if (!article) return;
+      
+      document.getElementById('detailTitle').textContent = article.title;
+      document.getElementById('detailContent').innerHTML = article.content;
+      document.getElementById('detailMeta').textContent = `${article.author} · ${article.publishTime}`;
+      
+      const collectBtn = document.getElementById('detailCollectBtn');
+      collectBtn.textContent = article.collected ? '已收藏' : '收藏';
+      collectBtn.className = article.collected ? 'btn-collect collected' : 'btn-collect';
+      
+      document.getElementById('detailModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    // 关闭详情
+    function closeDetail() {
+      document.getElementById('detailModal').classList.remove('active');
+      document.body.style.overflow = '';
+      currentArticleId = null;
+    }
+    
+    // 切换收藏状态（详情页）
+    function toggleCollect() {
+      if (!currentArticleId) return;
+      toggleCollectItem(currentArticleId);
+      closeDetail();
+    }
+    
+    // 切换收藏状态（列表项）
+    function toggleCollectItem(articleId) {
+      const article = articles.find(a => a.id === articleId);
+      if (!article) return;
+      
+      article.collected = !article.collected;
+      saveArticles();
+      renderArticles();
+    }
+    
+    // 保存文章数据
+    function saveArticles() {
+      localStorage.setItem('diabetes_articles', JSON.stringify(articles));
+    }
+    
+    // 生成文章
+    function generateArticle() {
+      alert('正在生成个性化健康资讯...\n\n（实际项目中将调用Dify工作流API）');
+    }
+    
+    // 检查登录状态
+    function checkLogin() {
+      const user = localStorage.getItem('diabetes_current_user') || sessionStorage.getItem('diabetes_current_user');
+      if (!user) {
+        location.href = 'index.html';
+      }
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      checkLogin();
+      loadArticles();
+    });
+  </script>
+</body>
+</html>

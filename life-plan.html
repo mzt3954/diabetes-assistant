@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>糖尿病预治智能助手 - 生活方案</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    .page-content {
+      padding-top: 56px;
+      padding-bottom: 72px;
+      min-height: 100vh;
+      background: var(--bg-color);
+    }
+    
+    .page-header {
+      background: white;
+      padding: 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .btn-generate {
+      padding: 8px 16px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-generate:hover {
+      background: var(--primary-dark);
+    }
+    
+    /* 方案标签 */
+    .plan-tabs {
+      display: flex;
+      padding: 0 16px;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .plan-tab {
+      flex: 1;
+      padding: 12px;
+      background: white;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    
+    .plan-tab.active {
+      border-color: var(--primary-color);
+      background: var(--primary-light);
+    }
+    
+    .plan-tab-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .plan-tab-icon.diet {
+      background: #E8F5E9;
+      color: #4CAF50;
+    }
+    
+    .plan-tab-icon.exercise {
+      background: #E3F2FD;
+      color: #2196F3;
+    }
+    
+    .plan-tab-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    .plan-tab-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    
+    .plan-tab-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    
+    /* 方案列表 */
+    .plan-section {
+      padding: 0 16px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .section-title svg {
+      width: 20px;
+      height: 20px;
+      color: var(--primary-color);
+    }
+    
+    .plan-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .plan-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.2s;
+    }
+    
+    .plan-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+    
+    .plan-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .plan-card-time {
+      font-size: 14px;
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+    
+    .plan-card-check {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .plan-card-check.checked {
+      background: var(--success-color);
+      border-color: var(--success-color);
+    }
+    
+    .plan-card-check.checked svg {
+      opacity: 1;
+    }
+    
+    .plan-card-check svg {
+      width: 14px;
+      height: 14px;
+      color: white;
+      opacity: 0;
+    }
+    
+    .plan-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .plan-card-content {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    
+    .plan-card-tags {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .plan-tag {
+      padding: 4px 10px;
+      background: var(--bg-gray);
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .plan-tag.calories {
+      background: #FFF3E0;
+      color: #FF9800;
+    }
+    
+    .plan-tag.duration {
+      background: #E3F2FD;
+      color: #2196F3;
+    }
+    
+    /* 打卡统计 */
+    .stats-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 0 16px 16px;
+    }
+    
+    .stats-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    
+    .stat-item {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .empty-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 16px;
+      background: var(--bg-gray);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .empty-icon svg {
+      width: 40px;
+      height: 40px;
+      color: var(--text-muted);
+    }
+    
+    .empty-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .empty-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    
+    /* 导航栏样式 */
+    .navbar {
+      background: white;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+    
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    
+    .navbar-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+    
+    .navbar-item {
+      padding: 8px 16px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    
+    .navbar-item:hover,
+    .navbar-item.active {
+      color: var(--primary-color);
+      background: var(--primary-light);
+    }
+    
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: white;
+      box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 100;
+    }
+    
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 16px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 11px;
+      transition: color 0.2s;
+    }
+    
+    .bottom-nav-item.active {
+      color: var(--primary-color);
+    }
+    
+    .bottom-nav-item svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .navbar-menu {
+        display: none;
+      }
+      
+      .plan-tabs {
+        gap: 8px;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <nav class="navbar">
+    <div class="container">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <a href="home.html" class="navbar-brand">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+          <span>糖尿病助手</span>
+        </a>
+        <div class="navbar-menu">
+          <a href="home.html" class="navbar-item">首页</a>
+          <a href="health-news.html" class="navbar-item">健康资讯</a>
+          <a href="doctor.html" class="navbar-item">医师咨询</a>
+          <a href="assistant.html" class="navbar-item">智能助手</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  
+  <div class="page-content">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1 class="page-title">生活方案</h1>
+      <button class="btn-generate" onclick="generatePlan()">生成新方案</button>
+    </div>
+    
+    <!-- 打卡统计 -->
+    <div class="stats-card">
+      <div class="stats-title">本周打卡统计</div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="dietCount">0</div>
+          <div class="stat-label">饮食打卡</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="exerciseCount">0</div>
+          <div class="stat-label">运动打卡</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="totalDays">0</div>
+          <div class="stat-label">连续天数</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 方案标签 -->
+    <div class="plan-tabs">
+      <div class="plan-tab active" data-type="diet" onclick="switchTab('diet')">
+        <div class="plan-tab-icon diet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+            <line x1="6" y1="1" x2="6" y2="4"/>
+            <line x1="10" y1="1" x2="10" y2="4"/>
+            <line x1="14" y1="1" x2="14" y2="4"/>
+          </svg>
+        </div>
+        <div class="plan-tab-title">饮食方案</div>
+        <div class="plan-tab-count" id="dietCountTab">0项</div>
+      </div>
+      <div class="plan-tab" data-type="exercise" onclick="switchTab('exercise')">
+        <div class="plan-tab-icon exercise">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <div class="plan-tab-title">运动方案</div>
+        <div class="plan-tab-count" id="exerciseCountTab">0项</div>
+      </div>
+    </div>
+    
+    <!-- 饮食方案列表 -->
+    <div class="plan-section" id="dietSection">
+      <div class="plan-list" id="dietList">
+        <!-- 由JavaScript动态生成 -->
+      </div>
+    </div>
+    
+    <!-- 运动方案列表 -->
+    <div class="plan-section" id="exerciseSection" style="display: none;">
+      <div class="plan-list" id="exerciseList">
+        <!-- 由JavaScript动态生成 -->
+      </div>
+    </div>
+  </div>
+  
+  <!-- 底部导航栏 -->
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>首页</span>
+    </a>
+    <a href="health-news.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      <span>资讯</span>
+    </a>
+    <a href="assistant.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span>助手</span>
+    </a>
+    <a href="personal.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>我的</span>
+    </a>
+  </nav>
+  
+  <script>
+    // 模拟生活方案数据
+    const defaultDietPlans = [
+      { id: 1, time: '07:30', title: '早餐：燕麦粥配蔬菜', content: '燕麦50g、鸡蛋1个、西兰花100g、牛奶200ml。低GI主食，富含蛋白质和膳食纤维。', calories: '350千卡', checked: false },
+      { id: 2, time: '10:00', title: '加餐：水果', content: '苹果1个或小番茄10颗。补充维生素，控制血糖波动。', calories: '80千卡', checked: false },
+      { id: 3, time: '12:00', title: '午餐：杂粮饭配瘦肉蔬菜', content: '糙米饭100g、鸡胸肉100g、炒青菜200g、豆腐汤。均衡营养，控制热量。', calories: '450千卡', checked: false },
+      { id: 4, time: '15:00', title: '加餐：坚果', content: '核桃2个或杏仁10颗。补充健康脂肪和微量元素。', calories: '100千卡', checked: false },
+      { id: 5, time: '18:30', title: '晚餐：清淡饮食', content: '杂粮馒头半个、清蒸鱼100g、凉拌黄瓜。晚餐宜清淡，控制碳水摄入。', calories: '380千卡', checked: false }
+    ];
+    
+    const defaultExercisePlans = [
+      { id: 1, time: '07:00', title: '晨起伸展', content: '进行10分钟的全身伸展运动，唤醒身体，促进血液循环。', duration: '10分钟', checked: false },
+      { id: 2, time: '12:30', title: '午间散步', content: '午餐后30分钟开始，进行20分钟的慢速散步，帮助控制餐后血糖。', duration: '20分钟', checked: false },
+      { id: 3, time: '18:00', title: '有氧运动', content: '快走、游泳或骑自行车30分钟，心率控制在(220-年龄)*60%-70%。', duration: '30分钟', checked: false },
+      { id: 4, time: '20:00', title: '放松运动', content: '进行15分钟的瑜伽或冥想，放松身心，改善睡眠质量。', duration: '15分钟', checked: false }
+    ];
+    
+    let dietPlans = [];
+    let exercisePlans = [];
+    let currentTab = 'diet';
+    
+    // 获取当前用户
+    function getCurrentUser() {
+      const userStr = localStorage.getItem('diabetes_current_user') || sessionStorage.getItem('diabetes_current_user');
+      return userStr ? JSON.parse(userStr) : null;
+    }
+    
+    // 加载方案数据
+    function loadPlans() {
+      const user = getCurrentUser();
+      if (!user) return;
+      
+      const savedPlans = localStorage.getItem('diabetes_life_plans');
+      if (savedPlans) {
+        const allPlans = JSON.parse(savedPlans);
+        dietPlans = allPlans.diet || defaultDietPlans;
+        exercisePlans = allPlans.exercise || defaultExercisePlans;
+      } else {
+        dietPlans = [...defaultDietPlans];
+        exercisePlans = [...defaultExercisePlans];
+      }
+      
+      renderPlans();
+      updateStats();
+    }
+    
+    // 渲染方案列表
+    function renderPlans() {
+      renderDietPlans();
+      renderExercisePlans();
+      updateTabCounts();
+    }
+    
+    // 渲染饮食方案
+    function renderDietPlans() {
+      const container = document.getElementById('dietList');
+      if (dietPlans.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+              </svg>
+            </div>
+            <div class="empty-title">暂无饮食方案</div>
+            <div class="empty-desc">点击"生成新方案"获取个性化饮食建议</div>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = dietPlans.map(plan => `
+        <div class="plan-card">
+          <div class="plan-card-header">
+            <span class="plan-card-time">${plan.time}</span>
+            <div class="plan-card-check ${plan.checked ? 'checked' : ''}" onclick="toggleCheck('diet', ${plan.id})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+          </div>
+          <div class="plan-card-title">${plan.title}</div>
+          <div class="plan-card-content">${plan.content}</div>
+          <div class="plan-card-tags">
+            <span class="plan-tag calories">${plan.calories}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // 渲染运动方案
+    function renderExercisePlans() {
+      const container = document.getElementById('exerciseList');
+      if (exercisePlans.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </div>
+            <div class="empty-title">暂无运动方案</div>
+            <div class="empty-desc">点击"生成新方案"获取个性化运动建议</div>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = exercisePlans.map(plan => `
+        <div class="plan-card">
+          <div class="plan-card-header">
+            <span class="plan-card-time">${plan.time}</span>
+            <div class="plan-card-check ${plan.checked ? 'checked' : ''}" onclick="toggleCheck('exercise', ${plan.id})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+          </div>
+          <div class="plan-card-title">${plan.title}</div>
+          <div class="plan-card-content">${plan.content}</div>
+          <div class="plan-card-tags">
+            <span class="plan-tag duration">${plan.duration}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // 切换标签
+    function switchTab(type) {
+      currentTab = type;
+      
+      // 更新标签样式
+      document.querySelectorAll('.plan-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.type === type);
+      });
+      
+      // 切换显示
+      document.getElementById('dietSection').style.display = type === 'diet' ? 'block' : 'none';
+      document.getElementById('exerciseSection').style.display = type === 'exercise' ? 'block' : 'none';
+    }
+    
+    // 更新标签计数
+    function updateTabCounts() {
+      document.getElementById('dietCountTab').textContent = dietPlans.length + '项';
+      document.getElementById('exerciseCountTab').textContent = exercisePlans.length + '项';
+    }
+    
+    // 切换打卡状态
+    function toggleCheck(type, id) {
+      const plans = type === 'diet' ? dietPlans : exercisePlans;
+      const plan = plans.find(p => p.id === id);
+      if (plan) {
+        plan.checked = !plan.checked;
+        renderPlans();
+        updateStats();
+        savePlans();
+      }
+    }
+    
+    // 更新统计数据
+    function updateStats() {
+      const dietChecked = dietPlans.filter(p => p.checked).length;
+      const exerciseChecked = exercisePlans.filter(p => p.checked).length;
+      
+      document.getElementById('dietCount').textContent = dietChecked;
+      document.getElementById('exerciseCount').textContent = exerciseChecked;
+      
+      // 计算连续天数（简化逻辑）
+      const totalChecked = dietChecked + exerciseChecked;
+      document.getElementById('totalDays').textContent = Math.min(totalChecked, 7);
+    }
+    
+    // 保存方案
+    function savePlans() {
+      localStorage.setItem('diabetes_life_plans', JSON.stringify({
+        diet: dietPlans,
+        exercise: exercisePlans
+      }));
+    }
+    
+    // 生成新方案
+    function generatePlan() {
+      // 模拟生成新方案
+      alert('正在生成个性化生活方案...\n\n（实际项目中将调用Dify工作流API）');
+      
+      // 重置打卡状态
+      dietPlans.forEach(p => p.checked = false);
+      exercisePlans.forEach(p => p.checked = false);
+      
+      renderPlans();
+      updateStats();
+      savePlans();
+    }
+    
+    // 检查登录状态
+    function checkLogin() {
+      const user = localStorage.getItem('diabetes_current_user') || sessionStorage.getItem('diabetes_current_user');
+      if (!user) {
+        location.href = 'index.html';
+      }
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      checkLogin();
+      loadPlans();
+    });
+  </script>
+</body>
+</html>

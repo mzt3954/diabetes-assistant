@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>糖尿病预治智能助手 - 医师咨询</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    .page-content {
+      padding-top: 56px;
+      padding-bottom: 72px;
+      min-height: 100vh;
+      background: var(--bg-color);
+    }
+    
+    /* 页面头部 */
+    .page-header {
+      background: white;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .page-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    
+    /* 医生列表 */
+    .doctor-list {
+      padding: 0 16px;
+    }
+    
+    .doctor-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .doctor-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    
+    .doctor-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    
+    .doctor-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .doctor-avatar-placeholder {
+      font-size: 28px;
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    
+    .doctor-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .doctor-name {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .doctor-title {
+      font-size: 13px;
+      color: var(--primary-color);
+      background: var(--primary-light);
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    
+    .doctor-dept {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    
+    .doctor-intro {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.5;
+    }
+    
+    .doctor-action {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .doctor-action svg {
+      width: 24px;
+      height: 24px;
+      color: var(--primary-color);
+    }
+    
+    .doctor-action span {
+      font-size: 12px;
+      color: var(--primary-color);
+    }
+    
+    /* 聊天模态框 */
+    .chat-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-color);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+    }
+    
+    .chat-modal.active {
+      display: flex;
+    }
+    
+    .chat-header {
+      background: white;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+    
+    .chat-back {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    
+    .chat-back:hover {
+      background: var(--bg-gray);
+    }
+    
+    .chat-doctor-info {
+      flex: 1;
+    }
+    
+    .chat-doctor-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .chat-doctor-status {
+      font-size: 12px;
+      color: var(--success-color);
+    }
+    
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    
+    .message {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    
+    .message.doctor {
+      flex-direction: row;
+    }
+    
+    .message.user {
+      flex-direction: row-reverse;
+    }
+    
+    .message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    
+    .message.user .message-avatar {
+      background: var(--secondary-light);
+      color: var(--secondary-color);
+    }
+    
+    .message-content {
+      max-width: 70%;
+    }
+    
+    .message-bubble {
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .message.doctor .message-bubble {
+      background: white;
+      color: var(--text-primary);
+      border-top-left-radius: 4px;
+    }
+    
+    .message.user .message-bubble {
+      background: var(--primary-color);
+      color: white;
+      border-top-right-radius: 4px;
+    }
+    
+    .message-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    
+    .message.user .message-time {
+      text-align: right;
+    }
+    
+    /* 快捷问题 */
+    .quick-questions {
+      padding: 12px 16px;
+      background: white;
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .quick-title {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    
+    .quick-list {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    
+    .quick-item {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      background: var(--bg-gray);
+      border-radius: 16px;
+      font-size: 13px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .quick-item:hover {
+      background: var(--primary-light);
+      color: var(--primary-color);
+    }
+    
+    /* 输入区域 */
+    .chat-input-area {
+      background: white;
+      padding: 12px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    
+    .chat-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 14px;
+      resize: none;
+      max-height: 100px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    
+    .chat-input:focus {
+      border-color: var(--primary-color);
+    }
+    
+    .chat-send {
+      width: 40px;
+      height: 40px;
+      background: var(--primary-color);
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .chat-send:hover {
+      background: var(--primary-dark);
+    }
+    
+    .chat-send:disabled {
+      background: var(--border-color);
+      cursor: not-allowed;
+    }
+    
+    .chat-send svg {
+      width: 20px;
+      height: 20px;
+      color: white;
+    }
+    
+    /* 打字指示器 */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+    }
+    
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      animation: typing 1.4s infinite;
+    }
+    
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-4px); }
+    }
+    
+    /* 导航栏 */
+    .navbar {
+      background: white;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+    
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    
+    .navbar-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+    
+    .navbar-item {
+      padding: 8px 16px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    
+    .navbar-item:hover,
+    .navbar-item.active {
+      color: var(--primary-color);
+      background: var(--primary-light);
+    }
+    
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: white;
+      box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 100;
+    }
+    
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 16px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 11px;
+      transition: color 0.2s;
+    }
+    
+    .bottom-nav-item.active {
+      color: var(--primary-color);
+    }
+    
+    .bottom-nav-item svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .navbar-menu {
+        display: none;
+      }
+      
+      .doctor-card {
+        padding: 12px;
+      }
+      
+      .doctor-avatar {
+        width: 60px;
+        height: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <nav class="navbar">
+    <div class="container">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <a href="home.html" class="navbar-brand">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+          <span>糖尿病助手</span>
+        </a>
+        <div class="navbar-menu">
+          <a href="home.html" class="navbar-item">首页</a>
+          <a href="health-news.html" class="navbar-item">健康资讯</a>
+          <a href="doctor.html" class="navbar-item active">医师咨询</a>
+          <a href="assistant.html" class="navbar-item">智能助手</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  
+  <div class="page-content">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1 class="page-title">医师咨询</h1>
+      <p class="page-desc">在线咨询专业医师，获取健康建议</p>
+    </div>
+    
+    <!-- 医生列表 -->
+    <div class="doctor-list" id="doctorList">
+      <!-- 由JavaScript动态生成 -->
+    </div>
+  </div>
+  
+  <!-- 底部导航栏 -->
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>首页</span>
+    </a>
+    <a href="health-news.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      <span>资讯</span>
+    </a>
+    <a href="assistant.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span>助手</span>
+    </a>
+    <a href="personal.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>我的</span>
+    </a>
+  </nav>
+  
+  <!-- 聊天模态框 -->
+  <div class="chat-modal" id="chatModal">
+    <div class="chat-header">
+      <div class="chat-back" onclick="closeChat()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </div>
+      <div class="chat-doctor-info">
+        <div class="chat-doctor-name" id="chatDoctorName">医生</div>
+        <div class="chat-doctor-status">在线</div>
+      </div>
+    </div>
+    
+    <div class="chat-messages" id="chatMessages">
+      <!-- 消息由JavaScript动态生成 -->
+    </div>
+    
+    <div class="quick-questions">
+      <div class="quick-title">常见问题</div>
+      <div class="quick-list">
+        <div class="quick-item" onclick="sendQuickQuestion('糖尿病有哪些症状？')">糖尿病症状</div>
+        <div class="quick-item" onclick="sendQuickQuestion('糖尿病患者应该注意什么饮食？')">饮食建议</div>
+        <div class="quick-item" onclick="sendQuickQuestion('如何控制血糖？')">血糖控制</div>
+        <div class="quick-item" onclick="sendQuickQuestion('糖尿病有哪些并发症？')">并发症</div>
+      </div>
+    </div>
+    
+    <div class="chat-input-area">
+      <textarea class="chat-input" id="chatInput" placeholder="请输入您的问题..." rows="1"></textarea>
+      <button class="chat-send" id="chatSend" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  
+  <script>
+    // 模拟医生数据
+    const doctors = [
+      {
+        id: 1,
+        name: '张医生',
+        title: '主任医师',
+        department: '内分泌科',
+        introduction: '从事内分泌疾病临床工作20余年，擅长糖尿病、甲状腺疾病的诊断与治疗。',
+        avatar: null
+      },
+      {
+        id: 2,
+        name: '李医生',
+        title: '副主任医师',
+        department: '营养科',
+        introduction: '专注于糖尿病营养治疗，擅长制定个性化饮食方案，帮助患者科学控糖。',
+        avatar: null
+      },
+      {
+        id: 3,
+        name: '王医生',
+        title: '主治医师',
+        department: '康复科',
+        introduction: '擅长糖尿病运动康复指导，帮助患者通过科学运动改善血糖控制。',
+        avatar: null
+      },
+      {
+        id: 4,
+        name: '陈医生',
+        title: '主任医师',
+        department: '内分泌科',
+        introduction: '糖尿病领域专家，擅长糖尿病并发症的预防与治疗，发表学术论文30余篇。',
+        avatar: null
+      }
+    ];
+    
+    // 当前聊天的医生
+    let currentDoctor = null;
+    let chatHistory = [];
+    
+    // 渲染医生列表
+    function renderDoctors() {
+      const container = document.getElementById('doctorList');
+      container.innerHTML = doctors.map(doctor => `
+        <div class="doctor-card" onclick="openChat(${doctor.id})">
+          <div class="doctor-avatar">
+            ${doctor.avatar 
+              ? `<img src="${doctor.avatar}" alt="${doctor.name}">` 
+              : `<span class="doctor-avatar-placeholder">${doctor.name.charAt(0)}</span>`
+            }
+          </div>
+          <div class="doctor-info">
+            <div class="doctor-name">${doctor.name}</div>
+            <div class="doctor-title">${doctor.title}</div>
+            <div class="doctor-dept">${doctor.department}</div>
+            <div class="doctor-intro">${doctor.introduction}</div>
+          </div>
+          <div class="doctor-action">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>咨询</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // 打开聊天窗口
+    function openChat(doctorId) {
+      currentDoctor = doctors.find(d => d.id === doctorId);
+      if (!currentDoctor) return;
+      
+      // 更新聊天头部
+      document.getElementById('chatDoctorName').textContent = currentDoctor.name;
+      
+      // 清空聊天记录并添加欢迎消息
+      chatHistory = [
+        {
+          type: 'doctor',
+          content: `您好！我是${currentDoctor.name}，${currentDoctor.department}${currentDoctor.title}。有什么可以帮助您的吗？`,
+          time: formatTime(new Date())
+        }
+      ];
+      
+      renderMessages();
+      
+      // 显示聊天模态框
+      document.getElementById('chatModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    // 关闭聊天窗口
+    function closeChat() {
+      document.getElementById('chatModal').classList.remove('active');
+      document.body.style.overflow = '';
+      currentDoctor = null;
+    }
+    
+    // 渲染聊天消息
+    function renderMessages() {
+      const container = document.getElementById('chatMessages');
+      container.innerHTML = chatHistory.map(msg => `
+        <div class="message ${msg.type}">
+          <div class="message-avatar">
+            ${msg.type === 'doctor' ? currentDoctor.name.charAt(0) : '我'}
+          </div>
+          <div class="message-content">
+            <div class="message-bubble">${msg.content}</div>
+            <div class="message-time">${msg.time}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      // 滚动到底部
+      container.scrollTop = container.scrollHeight;
+    }
+    
+    // 显示打字指示器
+    function showTyping() {
+      const container = document.getElementById('chatMessages');
+      const typingHtml = `
+        <div class="message doctor" id="typingIndicator">
+          <div class="message-avatar">${currentDoctor.name.charAt(0)}</div>
+          <div class="message-content">
+            <div class="message-bubble">
+              <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', typingHtml);
+      container.scrollTop = container.scrollHeight;
+    }
+    
+    // 隐藏打字指示器
+    function hideTyping() {
+      const typing = document.getElementById('typingIndicator');
+      if (typing) typing.remove();
+    }
+    
+    // 发送消息
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const content = input.value.trim();
+      
+      if (!content || !currentDoctor) return;
+      
+      // 添加用户消息
+      chatHistory.push({
+        type: 'user',
+        content: content,
+        time: formatTime(new Date())
+      });
+      
+      renderMessages();
+      
+      // 清空输入框
+      input.value = '';
+      input.style.height = 'auto';
+      
+      // 禁用发送按钮
+      document.getElementById('chatSend').disabled = true;
+      
+      // 显示打字指示器
+      showTyping();
+      
+      // 模拟医生回复
+      setTimeout(() => {
+        hideTyping();
+        
+        const reply = generateDoctorReply(content);
+        chatHistory.push({
+          type: 'doctor',
+          content: reply,
+          time: formatTime(new Date())
+        });
+        
+        renderMessages();
+        document.getElementById('chatSend').disabled = false;
+      }, 1500);
+    }
+    
+    // 发送快捷问题
+    function sendQuickQuestion(question) {
+      document.getElementById('chatInput').value = question;
+      sendMessage();
+    }
+    
+    // 生成医生回复（模拟AI回复）
+    function generateDoctorReply(question) {
+      const replies = {
+        '症状': '糖尿病的典型症状包括：\n1. 多饮、多食、多尿\n2. 体重减轻\n3. 疲劳乏力\n4. 视力模糊\n5. 伤口愈合缓慢\n\n如果您出现这些症状，建议及时就医检查血糖。',
+        '饮食': '糖尿病患者饮食建议：\n1. 控制总热量摄入\n2. 选择低GI食物\n3. 定时定量进餐\n4. 多吃蔬菜和全谷物\n5. 限制高糖高脂食物\n\n建议咨询营养师制定个性化饮食方案。',
+        '血糖': '控制血糖的方法：\n1. 规律作息\n2. 合理饮食\n3. 适量运动\n4. 遵医嘱用药\n5. 定期监测血糖\n\n保持良好的生活习惯是控制血糖的基础。',
+        '并发症': '糖尿病常见并发症：\n1. 心脑血管疾病\n2. 糖尿病肾病\n3. 糖尿病视网膜病变\n4. 糖尿病足\n5. 神经病变\n\n预防并发症的关键是控制好血糖。'
+      };
+      
+      for (const [key, value] of Object.entries(replies)) {
+        if (question.includes(key)) {
+          return value;
+        }
+      }
+      
+      return '感谢您的提问。作为AI助手，我会尽力为您提供参考建议。但请注意，我的回答不能替代专业医生的诊断和治疗建议。如有健康问题，请及时就医。';
+    }
+    
+    // 格式化时间
+    function formatTime(date) {
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+    
+    // 检查登录状态
+    function checkLogin() {
+      const user = localStorage.getItem('diabetes_current_user') || sessionStorage.getItem('diabetes_current_user');
+      if (!user) {
+        location.href = 'index.html';
+      }
+    }
+    
+    // 输入框自动调整高度
+    document.getElementById('chatInput').addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+      
+      // 启用/禁用发送按钮
+      document.getElementById('chatSend').disabled = !this.value.trim();
+    });
+    
+    // 回车发送消息
+    document.getElementById('chatInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (this.value.trim()) {
+          sendMessage();
+        }
+      }
+    });
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      checkLogin();
+      renderDoctors();
+    });
+  </script>
+</body>
+</html>
