@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>糖尿病风险预测 - 糖尿病预治智能助手</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <nav id="dpaNavbar"></nav>
+
+  <main class="page">
+    <header class="page-header">
+      <div class="container">
+        <h1 class="page-title">糖尿病风险预测</h1>
+        <p class="page-subtitle">填写个人信息，AI 将基于风险量表评估您的糖尿病风险</p>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- 结果区（默认隐藏） -->
+      <div id="resultArea" class="hidden"></div>
+
+      <!-- 表单区 -->
+      <form id="riskForm" novalidate>
+        <div class="risk-form-card">
+          <h2 class="risk-section-title">基本信息</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="age">年龄 <span class="text-error">*</span></label>
+              <input type="number" class="form-input" id="age" placeholder="请输入年龄" min="1" max="120">
+              <div class="form-error" id="ageError"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sex">性别 <span class="text-error">*</span></label>
+              <select class="form-select" id="sex">
+                <option value="">请选择</option>
+                <option value="男">男</option>
+                <option value="女">女</option>
+              </select>
+              <div class="form-error" id="sexError"></div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="height">身高（cm）<span class="text-error">*</span></label>
+              <input type="number" class="form-input" id="height" placeholder="如 170" min="80" max="250" step="0.1">
+              <div class="form-error" id="heightError"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="weight">体重（kg）<span class="text-error">*</span></label>
+              <input type="number" class="form-input" id="weight" placeholder="如 65" min="20" max="300" step="0.1">
+              <div class="form-error" id="weightError"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">BMI（自动计算）</label>
+            <input type="text" class="form-input" id="bmiDisplay" placeholder="填写身高体重后自动计算" readonly>
+          </div>
+        </div>
+
+        <div class="risk-form-card">
+          <h2 class="risk-section-title">健康指标</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="waistline">腰围（cm）</label>
+              <input type="number" class="form-input" id="waistline" placeholder="如 85" min="40" max="200" step="0.1">
+              <div class="form-error" id="waistlineError"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="systolicPressure">收缩压（mmHg）</label>
+              <input type="number" class="form-input" id="systolicPressure" placeholder="如 120" min="60" max="260">
+              <div class="form-error" id="systolicPressureError"></div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="familyHistory">糖尿病家族史</label>
+              <select class="form-select" id="familyHistory">
+                <option value="无">无</option>
+                <option value="有">有（父母/兄弟姐妹患病）</option>
+              </select>
+            </div>
+            <div class="form-group" id="pregnancyGroup">
+              <label class="form-label" for="isPregnancy">是否有妊娠糖尿病史</label>
+              <select class="form-select" id="isPregnancy">
+                <option value="无">无</option>
+                <option value="有">有</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="disease">当前是否已确诊糖尿病</label>
+            <select class="form-select" id="disease">
+              <option value="否">否（未确诊 / 预防阶段）</option>
+              <option value="是">是（已确诊）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex gap-md mb-lg">
+          <button type="button" class="btn btn-outline flex-1" id="resetBtn">重置</button>
+          <button type="submit" class="btn btn-primary flex-1" id="submitBtn">
+            <span class="btn-text">开始评估</span>
+            <span class="loading-spinner hidden" style="width:18px;height:18px;border-width:2px"></span>
+          </button>
+        </div>
+      </form>
+
+      <!-- 历史记录 -->
+      <section class="section" id="historySection">
+        <div class="section-header"><h2 class="section-title">历史评估</h2></div>
+        <div class="risk-form-card" id="historyList"></div>
+      </section>
+    </div>
+  </main>
+
+  <nav id="dpaBottomNav"></nav>
+
+  <script src="js/config.js"></script>
+  <script src="js/seed.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/mock-engine.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/risk.js"></script>
+</body>
+</html>
