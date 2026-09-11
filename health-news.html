@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>健康资讯 - 糖尿病预治智能助手</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <nav id="dpaNavbar"></nav>
+
+  <main class="page">
+    <header class="page-header">
+      <div class="container">
+        <h1 class="page-title">健康资讯</h1>
+        <p class="page-subtitle">基于您的健康信息，智能推荐个性化健康知识</p>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- 标签栏 -->
+      <div class="news-tags" id="newsTags"></div>
+
+      <!-- 操作栏 -->
+      <div class="flex items-center justify-between mb-md">
+        <span class="text-sm text-muted" id="newsCount"></span>
+        <button class="btn btn-primary btn-sm" id="generateBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          <span class="btn-text">生成资讯</span>
+          <span class="loading-spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
+        </button>
+      </div>
+
+      <!-- 列表 -->
+      <div id="newsList"></div>
+    </div>
+  </main>
+
+  <nav id="dpaBottomNav"></nav>
+
+  <script src="js/config.js"></script>
+  <script src="js/seed.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/mock-engine.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/news.js"></script>
+</body>
+</html>

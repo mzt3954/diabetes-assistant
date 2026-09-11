@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>打卡记录与分析 - 糖尿病预治智能助手</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <nav id="dpaNavbar"></nav>
+
+  <main class="page">
+    <header class="page-header">
+      <div class="container">
+        <h1 class="page-title">打卡记录与分析</h1>
+        <p class="page-subtitle">记录每日健康行为，AI 智能分析近 7 天生活状态</p>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- 近 7 日概览 -->
+      <section class="section">
+        <div class="section-header"><h2 class="section-title">近 7 日打卡</h2>
+          <button class="section-more" id="gotoPlan">去打卡
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+        <div class="checkin-week" id="weekGrid"></div>
+      </section>
+
+      <!-- 智能分析 -->
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">智能分析</h2>
+          <button class="section-more" id="refreshAnalysis">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            重新分析
+          </button>
+        </div>
+        <div id="analysisArea"></div>
+      </section>
+
+      <!-- 打卡明细 -->
+      <section class="section">
+        <div class="section-header"><h2 class="section-title">打卡明细</h2></div>
+        <div class="list" id="detailList"></div>
+      </section>
+    </div>
+  </main>
+
+  <nav id="dpaBottomNav"></nav>
+
+  <script src="js/config.js"></script>
+  <script src="js/seed.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/mock-engine.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/checkin.js"></script>
+</body>
+</html>

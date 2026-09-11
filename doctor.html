@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>医师咨询 - 糖尿病预治智能助手</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <nav id="dpaNavbar"></nav>
+
+  <!-- 视图一：医生列表 -->
+  <main class="page" id="listView">
+    <section class="section">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">在线医师</h2>
+            <p class="text-muted text-sm mt-xs">选择医师，获取专业糖尿病防治建议</p>
+          </div>
+        </div>
+        <div class="doctor-list" id="doctorList"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="disclaimer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>在线咨询基于 AI 与糖尿病知识库生成，仅供参考，不能替代线下面诊。出现紧急症状请立即就医。</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 视图二：聊天 -->
+  <div class="chat-page hidden" id="chatView">
+    <header class="chat-header">
+      <button class="btn btn-ghost btn-sm" id="backToList" aria-label="返回">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="chat-avatar" id="chatAvatar">医</div>
+      <div class="flex-1">
+        <div class="font-bold" id="chatDoctorName">医师</div>
+        <div class="text-xs text-muted" id="chatDoctorDept"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="clearChat" aria-label="清空会话">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </button>
+    </header>
+
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-quick" id="chatQuick"></div>
+    <div class="chat-input-bar">
+      <textarea id="chatInput" rows="1" placeholder="描述您的症状或疑问，例如：2 型糖尿病应该怎么吃？"></textarea>
+      <button class="chat-send" id="chatSend" aria-label="发送">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <nav id="dpaBottomNav"></nav>
+
+  <script src="js/config.js"></script>
+  <script src="js/seed.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/mock-engine.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/doctor.js"></script>
+</body>
+</html>
