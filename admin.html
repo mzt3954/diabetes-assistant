@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 智能管理 - 糖尿病预治智能助手</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <nav id="dpaNavbar"></nav>
+
+  <main class="page">
+    <header class="page-header">
+      <div class="container">
+        <h1 class="page-title">AI 智能管理</h1>
+        <p class="page-subtitle">用自然语言管理平台数据，无需在多个模块间反复切换</p>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- 数据总览 -->
+      <section class="section">
+        <div class="section-header"><h2 class="section-title">数据总览</h2>
+          <button class="section-more" id="exportBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            导出数据
+          </button>
+        </div>
+        <div class="admin-stats" id="adminStats"></div>
+      </section>
+
+      <!-- 管理助手 -->
+      <section class="section">
+        <div class="section-header"><h2 class="section-title">AI 管理助手</h2></div>
+        <div class="admin-chat">
+          <div class="admin-chat-messages" id="adminMessages"></div>
+          <div class="chat-quick" id="adminQuick"></div>
+          <div class="chat-input-bar">
+            <textarea id="adminInput" rows="1" placeholder="例如：统计系统数据 / 查看用户列表 / 新增一篇文章"></textarea>
+            <button class="chat-send" id="adminSend" aria-label="发送">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 数据表 -->
+      <section class="section">
+        <div class="filter-bar" id="tableTabs">
+          <button class="filter-chip active" data-table="users">用户</button>
+          <button class="filter-chip" data-table="articles">文章</button>
+          <button class="filter-chip" data-table="plans">生活方案</button>
+          <button class="filter-chip" data-table="punch">打卡记录</button>
+          <button class="filter-chip" data-table="risk">风险记录</button>
+        </div>
+        <div class="list" id="tableArea"></div>
+      </section>
+    </div>
+  </main>
+
+  <nav id="dpaBottomNav"></nav>
+
+  <script src="js/config.js"></script>
+  <script src="js/seed.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/mock-engine.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/admin.js"></script>
+</body>
+</html>
