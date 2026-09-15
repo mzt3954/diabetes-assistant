@@ -302,3 +302,63 @@ python 交付自检.py
 
 > 真实联调请先设置超时：`set DIFY_TIMEOUT=60000`。
 > 实测部分工作流（如打卡分析）需 40 秒以上，超时设过短会被误判为 Dify 故障。
+
+---
+
+## 配置自己的 Dify（可选）
+
+仓库里**不包含任何 Dify 地址与 API Key**。不配置时应用自动运行在**离线演示模式**
+（本地规则引擎），13 个页面与全部功能都可用，只是回答由本地引擎生成。
+
+要接自己的 Dify，只需在本地新建一个**不入库**的文件：
+
+```bash
+cd ai
+cat > js/config.local.js <<'EOF'
+(function (global) {
+  'use strict';
+  global.DPA_CONFIG_LOCAL = {
+    DIFY: {
+      baseUrl: 'http://<你的Dify地址>/v1',
+      proxyMode: false,
+      timeout: 60000,
+      apps: {
+        homeData:        { apiKey: 'app-xxxxxxxx' },
+        doctorChat:      { apiKey: 'app-xxxxxxxx' },
+        riskPrediction:  { apiKey: 'app-xxxxxxxx' },
+        lifePlan:        { apiKey: 'app-xxxxxxxx' },
+        healthNews:      { apiKey: 'app-xxxxxxxx' },
+        checkinAnalysis: { apiKey: 'app-xxxxxxxx' },
+        aiAssistant:     { apiKey: 'app-xxxxxxxx' },
+        adminAgent:      { apiKey: 'app-xxxxxxxx' }
+      }
+    }
+  };
+})(window);
+EOF
+```
+
+`js/config.local.js` 已在 `.gitignore` 中，不会被提交。
+页面里已按「`config.local.js` → `config.js`」顺序引入，文件不存在时浏览器只报一个
+404，功能照常（自动降级）。
+
+### 8 个应用怎么建
+
+`dify-apps/` 下是本项目 8 个应用的 DSL 文件，可直接导入 Dify：
+
+```bash
+# 方式一：在 Dify 界面「导入 DSL 文件」逐个导入
+# 方式二：用内置的控制台自动化工具批量导入并生成 Key
+set DIFY_BASE_URL=http://<你的Dify地址>
+set DIFY_CONSOLE_EMAIL=<登录邮箱>
+set DIFY_CONSOLE_PASSWORD=<登录密码>
+node tools/dify-console.js import dify-apps
+node tools/dify-console.js keys --create
+node tools/dify-console.js write-config     # 自动生成 js/config.local.js
+```
+
+### 超时设置提醒
+
+`timeout` 建议不低于 **60000**（60 秒）。实测部分工作流（打卡分析）在课程云沙箱上
+需要 40 秒以上，超时设得过短会让正常请求被误判为失败并降级 —— 页面上表现为
+「当前离线演示模式」，但根因是客户端等得不够，不是 Dify 的问题。
