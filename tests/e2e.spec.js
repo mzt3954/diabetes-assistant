@@ -285,4 +285,47 @@ test.describe('糖尿病预治智能助手 E2E', () => {
     }
     expect(res.status()).toBe(200);
   });
+
+
+  /* ---------------- PC / 移动端布局区分 ---------------- */
+
+  test('18. 响应式：PC 端隐藏底部导航，只保留顶部导航', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await loginAs(page, 'user');
+    await page.goto(BASE + '/home.html');
+
+    await expect(page.locator('.navbar')).toBeVisible();
+    await expect(page.locator('.navbar-menu')).toBeVisible();
+    // 底部导航是移动端专属，PC 上必须不显示
+    await expect(page.locator('.bottom-nav')).toBeHidden();
+  });
+
+  test('19. 响应式：移动端显示底部导航，顶栏菜单收起', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await loginAs(page, 'user');
+    await page.goto(BASE + '/home.html');
+
+    await expect(page.locator('.bottom-nav')).toBeVisible();
+    await expect(page.locator('.navbar-menu')).toBeHidden();
+    // 顶栏品牌区仍在
+    await expect(page.locator('.navbar-brand')).toBeVisible();
+  });
+
+  test('20. 响应式：PC 端文章列表为双列，移动端为单列', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await loginAs(page, 'user');
+    await page.goto(BASE + '/home.html');
+    await page.waitForSelector('#articleList .article-card', { timeout: WAIT });
+    const pcCols = await page.evaluate(() =>
+      getComputedStyle(document.querySelector('#articleList')).gridTemplateColumns.split(' ').filter(Boolean).length);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(600);
+    const mbDisplay = await page.evaluate(() =>
+      getComputedStyle(document.querySelector('#articleList')).display);
+
+    expect(pcCols).toBe(2);
+    expect(mbDisplay).toBe('block');
+  });
+
 });

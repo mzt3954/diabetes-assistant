@@ -260,9 +260,9 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 
 /* ---------- 9. 底部导航 ---------- */
 .bottom-nav {
-  position: fixed; bottom: 0; left: 0; right: 0; height: 56px; background: #fff;
-  box-shadow: 0 -1px 4px rgba(0, 0, 0, .08); display: flex; align-items: center;
-  justify-content: space-around; z-index: var(--z-fixed);
+position: fixed; bottom: 0; left: 0; right: 0; height: 56px; background: #fff;
+box-shadow: 0 -1px 4px rgba(0, 0, 0, .08); display: none; align-items: center;
+justify-content: space-around; z-index: var(--z-fixed);
 }
 .bottom-nav-item {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
@@ -456,21 +456,96 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 .disclaimer svg { flex-shrink: 0; margin-top: 2px; }
 
 /* ---------- 23. 响应式 ---------- */
+/*
+ * 断点策略（PC / 平板 / 手机三档，布局明确区分）
+ *
+ *   PC      ≥1024px  顶部导航（无底栏）；容器 1200px；列表双列；表单双列
+ *   平板    769–1023px 顶部导航（无底栏）；容器 960px；列表双列
+ *   手机    ≤768px   顶部精简 + 底部导航；单列；可点区 ≥44px
+ *   小屏    ≤480px   进一步压缩字号与留白
+ */
+
+/* ---------- 默认（PC）：只保留顶部导航 ---------- */
+/* 底栏在 .bottom-nav 基础规则里已默认 display:none，此处不加 */
+.page { padding-bottom: 32px; }          /* PC 不需要为底栏留白 */
+.container { max-width: 1200px; }
+
+/* PC 宽屏：列表类内容改为双列，充分利用横向空间 */
+@media (min-width: 1024px) {
+.article-list,
+.doctor-list,
+#newsList {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 12px;
+align-items: start;
+}
+/* 双列时卡片自带下边框会显得断裂，改为整块圆角卡片 */
+.article-list > .article-card,
+.doctor-list > .doctor-card,
+#newsList > .news-card {
+border: 1px solid var(--border-light);
+border-radius: 12px;
+padding: 12px;
+margin-bottom: 0;
+transition: box-shadow .2s, transform .2s;
+}
+.article-list > .article-card:hover,
+.doctor-list > .doctor-card:hover,
+#newsList > .news-card:hover {
+box-shadow: var(--shadow-md);
+transform: translateY(-2px);
+}
+.type-list { grid-template-columns: repeat(4, 1fr); }
+.entry-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ---------- 平板 ---------- */
+@media (min-width: 769px) and (max-width: 1023px) {
+.container { max-width: 960px; }
+.article-list,
+.doctor-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.article-list > .article-card,
+.doctor-list > .doctor-card { border: 1px solid var(--border-light); border-radius: 12px; padding: 12px; margin-bottom: 0; }
+.type-list { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ---------- 手机：启用底部导航，单列布局 ---------- */
 @media (max-width: 768px) {
-  html { font-size: 13px; }
-  .navbar-menu { display: none; }
-  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-  .form-row { grid-template-columns: 1fr; }
-  .type-list { grid-template-columns: repeat(2, 1fr); }
+html { font-size: 13px; }
+.navbar-menu { display: none; }
+.bottom-nav { display: flex; }           /* 仅手机显示底部导航 */
+.page { padding-bottom: 76px; }          /* 给底栏让位 */
+.container { max-width: 100%; }
+
+.grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+.form-row { grid-template-columns: 1fr; }
+.type-list { grid-template-columns: repeat(2, 1fr); }
+.entry-grid { grid-template-columns: repeat(4, 1fr); }
+.article-list, .doctor-list, #newsList { display: block; }
+
+/* 移动端可点区域不小于 44px */
+.bottom-nav-item { padding: 8px 14px; min-height: 44px; }
+.navbar-brand { min-height: 44px; }
+.filter-chip { min-height: 36px; }
+.btn-sm { min-height: 36px; }
+.section-more { min-height: 32px; display: inline-flex; align-items: center; }
+.banner-dot { width: 24px; height: 24px; background: none; position: relative; }
+.banner-dot::after {
+content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, .55);
 }
+.banner-dot.active::after { width: 20px; border-radius: 4px; background: #fff; }
+}
+
+/* ---------- 小屏 ---------- */
 @media (max-width: 480px) {
-  .entry-icon { width: 42px; height: 42px; }
-  .entry-text { font-size: 12px; }
-  .banner { height: 150px; }
-  .banner-content h2 { font-size: 16px; }
-  .article-cover { width: 84px; height: 70px; }
-  .chat-msg { max-width: 90%; }
-}
-@media (min-width: 769px) {
-  .container { max-width: 1100px; }
+.entry-icon { width: 42px; height: 42px; }
+.entry-text { font-size: 12px; }
+.banner { height: 150px; }
+.banner-content h2 { font-size: 16px; }
+.article-cover { width: 84px; height: 70px; }
+.chat-msg { max-width: 90%; }
+.admin-stats { grid-template-columns: repeat(2, 1fr); }
+.analysis-metrics { grid-template-columns: repeat(3, 1fr); gap: 6px; }
 }

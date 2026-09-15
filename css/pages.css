@@ -281,12 +281,30 @@
 .filter-chip.active { background: var(--primary-color); border-color: var(--primary-color); color: #fff; }
 
 /* ============ 14. 响应式补充 ============ */
+/* PC 宽屏：医师列表、打卡网格等在此档保持紧凑的横向布局 */
+@media (min-width: 1024px) {
+.checkin-week { gap: 8px; }
+/* 注意：基础规则里 .doctor-list 是 flex，这里必须同时改 display，
+   否则 grid-template-columns 不起作用（pages.css 在 common.css 之后加载） */
+.doctor-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; align-items: start; }
+.doctor-list > .doctor-card {
+border: 1px solid var(--border-light);
+border-radius: 12px;
+padding: 12px;
+transition: box-shadow .2s, transform .2s;
+}
+.doctor-list > .doctor-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+}
 @media (max-width: 768px) {
-  .profile-card { flex-direction: column; text-align: center; padding: 20px; }
-  .profile-stats { justify-content: center; }
-  .analysis-metrics { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .admin-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .checkin-week { gap: 4px; }
+.profile-card { flex-direction: column; text-align: center; padding: 20px; }
+.profile-stats { justify-content: center; }
+.analysis-metrics { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.admin-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }   /* 手机改 2 列，避免数字挤压 */
+.checkin-week { gap: 4px; }
+/* 移动端表单控件与按钮加大可点区 */
+.form-input, .form-select, .form-textarea { min-height: 44px; font-size: 15px; }
+.btn-block { min-height: 46px; }
+.menu-item { min-height: 56px; }
 }
 @media (max-width: 480px) {
   .auth-card { padding: 22px 18px; }
