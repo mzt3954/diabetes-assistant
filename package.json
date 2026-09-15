@@ -1,20 +1,49 @@
 {
-  "name": "ai",
-  "version": "1.0.0",
-  "description": "> 基于 **DeepSeek 大模型 + Dify LLM 应用平台** 的一站式糖尿病预防与治疗健康管理平台 > 版本 v2.0.0 ｜ 纯静态前端（零构建、零依赖）｜ 双模式运行（在线 AI ⇄ 本地降级）",
-  "main": "playwright.config.js",
+  "name": "diabetes-assistant",
+  "version": "2.1.0",
+  "description": "糖尿病预治智能助手 — 基于 DeepSeek 大模型 + Dify LLM 应用平台的一站式糖尿病预防与治疗健康管理平台。纯静态前端（零构建、零运行时依赖），双模式运行（在线 AI ⇄ 本地降级）。",
+  "private": true,
+  "type": "commonjs",
+  "main": "js/config.js",
   "directories": {
     "doc": "docs",
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/logic-test.js && node tests/smoke-test.js && node tests/dsl-test.js && node tests/transport-test.js",
+    "test:logic": "node tests/logic-test.js",
+    "test:smoke": "node tests/smoke-test.js",
+    "test:dsl": "node tests/dsl-test.js",
+    "test:transport": "node tests/transport-test.js",
+    "test:integration": "node tests/integration-test.js",
+    "test:real": "node tests/real-dify-check.js",
+    "test:real:probe": "node tests/real-dify-check.js --probe",
+    "test:all": "npm run test && npm run test:integration",
+    "test:e2e": "playwright test",
+    "dev": "node tests/mock-dify-server.js --serve .",
+    "mock:dify": "node tests/mock-dify-server.js",
+    "lint": "eslint js tests tools",
+    "dify:providers": "node tools/dify-console.js providers",
+    "dify:apps": "node tools/dify-console.js apps",
+    "dify:gen": "node tools/gen-dsl.js",
+    "dify:import": "node tools/dify-console.js import dify-apps",
+    "dify:keys": "node tools/dify-console.js keys --create",
+    "dify:wire": "node tools/dify-console.js write-config",
+    "verify": "npm run test:all && npx playwright test"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
+  "keywords": [
+    "diabetes",
+    "health",
+    "dify",
+    "deepseek",
+    "static-site"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.47.0",
+    "eslint": "^9.11.0",
+    "http-server": "^14.1.1",
+    "js-yaml": "^4.3.2",
     "jsdom": "^24.1.3"
   }
 }

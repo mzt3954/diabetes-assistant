@@ -64,9 +64,18 @@
     return toDateKey(d);
   }
 
-  /** 数字千分位 */
+  /**
+   * 数字千分位。
+   * 只对整数部分加分隔符：早期实现直接对整串正则替换，
+   * formatNumber(1234.5678) 会得到 "1,234.5,678"。
+   */
   function formatNumber(n) {
-    return String(n || 0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    var num = Number(n);
+    if (!isFinite(num)) return String(n == null ? '' : n);
+    var neg = num < 0;
+    var parts = String(Math.abs(num)).split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg ? '-' : '') + parts.join('.');
   }
 
   /** 轻量 Markdown 渲染（支持 ## 标题、**加粗**、- 列表、1. 列表、空行分段） */
@@ -135,6 +144,12 @@
 
   /* ============ Modal ============ */
 
+  /**
+   * 通用模态框
+   * ⚠️ opts.html 会**原样**插入 innerHTML（用于容纳表单等富结构），
+   *    因此调用方必须自行对任何动态内容调用 escapeHtml/escapeAttr。
+   *    标题、按钮文案等纯文本字段已由本函数自动转义。
+   */
   function modal(opts) {
     opts = opts || {};
     var backdrop = document.createElement('div');
@@ -372,10 +387,63 @@
     if (el) el.scrollTop = el.scrollHeight;
   }
 
-  /** 解析 URL 参数 */
+  /**
+   * 解析 URL 参数。
+   * 对参数名做正则转义（否则形如 a.b 的名字会变成通配），
+   * 并兜住 decodeURIComponent 对畸形序列（如 ?id=%）抛出的 URIError。
+   */
   function query(name) {
-    var m = new RegExp('[?&]' + name + '=([^&#]*)').exec(location.search);
-    return m ? decodeURIComponent(m[1]) : null;
+    var safe = String(name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var m = new RegExp('[?&]' + safe + '=([^&#]*)').exec(location.search);
+    if (!m) return null;
+    try {
+      return decodeURIComponent(m[1]);
+    } catch (e) {
+      return m[1];
+    }
+  }
+
+  /* ============ 跳转安全 ============ */
+
+  /** 站内页面白名单（用于 redirect 参数校验） */
+  var ALLOWED_PAGES = [
+    'index.html', 'home.html', 'article.html', 'diabetes.html', 'doctor.html',
+    'risk-prediction.html', 'life-plan.html', 'checkin.html', 'health-news.html',
+    'assistant.html', 'personal.html', 'admin.html', 'help.html'
+  ];
+
+  /**
+   * 校验跳转目标，阻断开放重定向（Open Redirect）。
+   * 只允许站内白名单页面 + 查询串，拒绝协议、协议相对、反斜杠与目录穿越。
+   * @param {string} target   来自 URL 的 redirect 参数
+   * @param {string} fallback 校验失败时的兜底页面
+   */
+  function safeRedirect(target, fallback) {
+    var dft = fallback || 'home.html';
+    if (!target) return dft;
+    var t = String(target).trim();
+    if (!t) return dft;
+    if (t.indexOf('\\') >= 0) return dft;                       // 反斜杠（部分浏览器视为 /）
+    if (/^[a-z][a-z0-9+.-]*:/i.test(t)) return dft;             // 含协议，如 https:
+    if (t.indexOf('//') === 0) return dft;                      // 协议相对地址
+    if (t.indexOf('..') >= 0) return dft;                       // 目录穿越
+    var path = t.split('#')[0].split('?')[0];
+    if (ALLOWED_PAGES.indexOf(path) < 0) return dft;
+    return t;
+  }
+
+  /**
+   * 读取 CSS 设计令牌，避免在 JS 中硬编码主题色。
+   * @param {string} name CSS 变量名，如 '--risk-high'
+   */
+  function themeVar(name, fallback) {
+    try {
+      var v = getComputedStyle(document.documentElement).getPropertyValue(name);
+      v = (v || '').trim();
+      return v || fallback;
+    } catch (e) {
+      return fallback;
+    }
   }
 
   /** 统一的"AI 降级"提示 */
@@ -406,6 +474,9 @@
     debounce: debounce,
     scrollToBottom: scrollToBottom,
     query: query,
+    safeRedirect: safeRedirect,
+    themeVar: themeVar,
+    ALLOWED_PAGES: ALLOWED_PAGES,
     notifyFallback: notifyFallback
   };
 })(window);

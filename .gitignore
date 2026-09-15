@@ -1,0 +1,53 @@
+# ---------- 依赖 ----------
+# node_modules 不入库；package-lock.json 必须入库，CI 用 npm ci 保证可复现
+node_modules/
+
+# ---------- 测试与报告产物 ----------
+tests/report/
+tests/results/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+_artifacts_*/
+*.trace.zip
+
+# ---------- 日志 ----------
+*.log
+logs/
+npm-debug.log*
+yarn-error.log*
+
+# ---------- 环境与密钥（绝不入库）----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+certs/
+
+# Dify 控制台自动化产物：令牌缓存与导出的 Key 脚本
+tools/.console-token.json
+tools/.dify-keys.sh
+
+# ---------- 编辑器 / 系统 ----------
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- 构建 / 临时 ----------
+dist/
+build/
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig
+tools/.probe-*.json
+
+# 本地真实配置（Dify 地址与 API Key）：绝不入库
+js/config.local.js

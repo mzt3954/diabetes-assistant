@@ -1,0 +1,277 @@
+version: 0.6.0
+kind: app
+app:
+  name: WF-5 打卡分析
+  description: 分析近 7 日生活状态
+  icon: ✅
+  icon_type: emoji
+  icon_background: '#E4FBCC'
+  mode: workflow
+  use_icon_as_answer_icon: false
+dependencies: []
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features: {}
+  graph:
+    nodes:
+    - id: check_start
+      type: custom
+      data:
+        type: start
+        title: 开始
+        variables:
+        - label: 计划列表
+          variable: planList
+          type: paragraph
+          required: false
+        - label: 打卡记录
+          variable: punchList
+          type: paragraph
+          required: false
+        - label: 统计天数
+          variable: days
+          type: number
+          required: false
+        - label: 锚点日期
+          variable: anchorDate
+          type: text-input
+          required: false
+          max_length: 20
+      position:
+        x: 40
+        y: 240
+      positionAbsolute:
+        x: 40
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    - id: check_llm
+      type: custom
+      data:
+        type: llm
+        title: 打卡分析
+        model:
+          provider: langgenius/deepseek/deepseek
+          name: deepseek-v4-flash
+          mode: chat
+          completion_params:
+            temperature: 0.1
+        prompt_template:
+        - id: check_llm-system
+          role: system
+          text: 你是糖尿病健康管理数据分析师，只依据给定数据做统计，不臆造记录。你只输出一个 JSON 对象，绝不用三反引号包裹，绝不输出任何解释、前言或后记。
+        - id: check_llm-user
+          role: user
+          text: '请分析该用户最近 {{#check_start.days#}} 天的生活计划执行情况。
+
+
+            锚点日期（该窗口的最后一天）：{{#check_start.anchorDate#}}
+
+            计划列表（JSON 数组）：{{#check_start.planList#}}
+
+            打卡记录（JSON 数组）：{{#check_start.punchList#}}
+
+
+            严格输出如下 JSON：
+
+            {"days":7,"totalPlan":9,"expected":63,"done":45,"rate":72,"streak":3,"dietRate":80,"exerciseRate":60,"balance":60,"evaluation":"良好","completionStatus":"近 7 天共应完成 63 项，实际完成 45 项，完成率 72%","suggestions":["……","……","……"],"dayStats":[]}
+
+
+            要求：
+
+            1. totalPlan = 计划条数；expected = totalPlan × days；done = 打卡记录条数；
+
+            2. rate = round(done / expected × 100)，expected 为 0 时 rate 取 0；
+
+            3. evaluation 只能是「优秀」「良好」「需改进」：rate ≥85 → 优秀；60–84 → 良好；<60 → 需改进；
+
+            4. dietRate / exerciseRate 分别为饮食类、运动类计划的完成率；balance 为饮食与运动的均衡度（0–100）；
+
+            5. streak 为截至锚点日期连续完成的天数；
+
+            6. suggestions 恰好 3 条，每条 20–40 字，必须可执行；
+
+            7. 所有比率均为 0–100 的整数。
+
+
+            【规则引擎预计算结果】以下指标已由代码节点算出，必须原样采用，不得自行改动：
+
+            完成率={{#check_calc.completionRate#}}%　评级={{#check_calc.rating#}}　连续性={{#check_calc.streak#}}　饮食打卡={{#check_calc.dietRate#}}　运动打卡={{#check_calc.exerciseRate#}}　类型均衡度={{#check_calc.balance#}}
+
+            你的任务是补充分析文案与改进建议，并按要求输出 JSON。
+
+
+            【知识库检索结果】以下内容来自糖尿病专业文档知识库，请以此为准，不要编造：
+
+            {{#check_kb.result#}}'
+        context:
+          enabled: false
+          variable_selector: []
+        vision:
+          enabled: false
+      position:
+        x: 1000
+        y: 240
+      positionAbsolute:
+        x: 1000
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    - id: check_end
+      type: custom
+      data:
+        type: end
+        title: 输出
+        outputs:
+        - variable: result
+          value_selector:
+          - check_llm
+          - text
+          value_type: string
+      position:
+        x: 1320
+        y: 240
+      positionAbsolute:
+        x: 1320
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    - id: check_kb
+      type: custom
+      data:
+        type: knowledge-retrieval
+        title: 知识库检索（糖尿病专业文档）
+        desc: 检索 knowledge-base/ 下 6 份专业文档，为回答提供事实依据
+        query_variable_selector:
+        - check_start
+        - punchList
+        dataset_ids: []
+        retrieval_mode: multiple
+        multiple_retrieval_config:
+          top_k: 4
+          score_threshold: 0.5
+      position:
+        x: 360
+        y: 240
+      positionAbsolute:
+        x: 360
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 90
+    - id: check_calc
+      type: custom
+      data:
+        type: code
+        title: 打卡三维指标计算（代码节点）
+        desc: 确定性计算，避免把可算的指标交给大模型
+        code_language: python3
+        code: "def main(planList: str, punchList: str, days: float, anchorDate: str) -> dict:\n    \"\"\"打卡三维指标：完成率 / 连续性 / 类型均衡度。\n\n    口径与前端 js/mock-engine.js 的 analyzeCheckin 完全一致：\n      - 只统计窗口（最近 days 天，按 anchorDate 锚定）内的「已完成」打卡；\n      - 分母 expected = 方案条数 × 天数，分子为窗口内已完成的（日期, 方案）去重对数；\n      - 连续性 = 自窗口末日向前连续有打卡的天数；\n      - 均衡度 = min(饮食完成率, 运动完成率)。\n    \"\"\"\n    import json\n    from datetime import datetime, timedelta\n\n    try:\n        plans = json.loads(planList) if planList else []\n    except Exception:\n        plans = []\n    try:\n        punches = json.loads(punchList) if punchList else []\n    except Exception:\n        punches = []\n    if not isinstance(plans, list):\n        plans = []\n    if not isinstance(punches, list):\n        punches = []\n\n    days = int(days) if days else 7\n\n    anchor = None\n    if anchorDate:\n        try:\n            anchor = datetime.strptime(str(anchorDate)[:10], \"%Y-%m-%d\").date()\n        except Exception:\n            anchor\
+          \ = None\n    if anchor is None:\n        anchor = datetime.now().date()\n\n    total_plan = len(plans)\n\n    window_dates = [(anchor - timedelta(days=i)).strftime(\"%Y-%m-%d\")\n                    for i in range(days - 1, -1, -1)]\n    in_window = set(window_dates)\n\n    done_by_date = {}\n    diet_done = 0\n    ex_done = 0\n    for p in punches:\n        if not isinstance(p, dict):\n            continue\n        if p.get(\"completion_status\") != \"已完成\":\n            continue\n        ds = p.get(\"_date\")\n        if not ds:\n            t = p.get(\"punch_time\")\n            ds = str(t)[:10] if t else \"\"\n        if ds not in in_window:\n            continue\n        done_by_date.setdefault(ds, set())\n        key = p.get(\"_planId\", p.get(\"message\"))\n        done_by_date[ds].add(str(key))\n        if p.get(\"punch_type\") == \"饮食\":\n            diet_done += 1\n        if p.get(\"punch_type\") == \"运动\":\n            ex_done += 1\n\n    expected = total_plan * days\n\
+          \    done = 0\n    day_stats = []\n    for ds in window_dates:\n        cnt = len(done_by_date.get(ds, ()))\n        done += cnt\n        day_stats.append({\"date\": ds, \"count\": cnt})\n\n    rate = (done / float(expected)) if expected else 0.0\n\n    streak = 0\n    for st in reversed(day_stats):\n        if st[\"count\"] > 0:\n            streak += 1\n        else:\n            break\n\n    diet_total = sum(1 for p in plans if isinstance(p, dict) and p.get(\"type\") == \"饮食\")\n    ex_total = sum(1 for p in plans if isinstance(p, dict) and p.get(\"type\") == \"运动\")\n\n    def clamp01(n):\n        return max(0.0, min(1.0, n))\n\n    diet_rate = clamp01(diet_done / float(diet_total * days)) if (diet_total * days) else 0.0\n    ex_rate = clamp01(ex_done / float(ex_total * days)) if (ex_total * days) else 0.0\n    balance = min(diet_rate, ex_rate)\n\n    if rate >= 0.85:\n        rating = \"优秀\"\n    elif rate >= 0.60:\n        rating = \"良好\"\n    else:\n        rating = \"需改进\"\
+          \n\n    return {\n        \"days\": days,\n        \"totalPlan\": total_plan,\n        \"expected\": expected,\n        \"done\": done,\n        \"completionRate\": round(clamp01(rate) * 100),\n        \"streak\": streak,\n        \"dietRate\": round(diet_rate * 100),\n        \"exerciseRate\": round(ex_rate * 100),\n        \"balance\": round(balance * 100),\n        \"rating\": rating,\n    }\n"
+        variables:
+        - variable: planList
+          value_selector:
+          - check_start
+          - planList
+        - variable: punchList
+          value_selector:
+          - check_start
+          - punchList
+        - variable: days
+          value_selector:
+          - check_start
+          - days
+        - variable: anchorDate
+          value_selector:
+          - check_start
+          - anchorDate
+        outputs:
+          days:
+            type: number
+          totalPlan:
+            type: number
+          expected:
+            type: number
+          done:
+            type: number
+          completionRate:
+            type: number
+          streak:
+            type: number
+          dietRate:
+            type: number
+          exerciseRate:
+            type: number
+          balance:
+            type: number
+          rating:
+            type: number
+      position:
+        x: 680
+        y: 240
+      positionAbsolute:
+        x: 680
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    edges:
+    - id: check_start-source-check_kb-target
+      source: check_start
+      target: check_kb
+      type: custom
+      data:
+        sourceType: start
+        targetType: knowledge-retrieval
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    - id: check_kb-source-check_calc-target
+      source: check_kb
+      target: check_calc
+      type: custom
+      data:
+        sourceType: knowledge-retrieval
+        targetType: code
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    - id: check_calc-source-check_llm-target
+      source: check_calc
+      target: check_llm
+      type: custom
+      data:
+        sourceType: code
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    - id: check_llm-source-check_end-target
+      source: check_llm
+      target: check_end
+      type: custom
+      data:
+        sourceType: llm
+        targetType: end
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.8

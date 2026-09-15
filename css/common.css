@@ -38,6 +38,12 @@
   --warning-color: #FF9800;
   --error-color: #F44336;
   --info-color: #2196F3;
+  /* 语义化状态令牌（由 JS 通过 ui.themeVar() 读取，改主题时只改这里） */
+  --risk-low: #4CAF50;
+  --risk-mid: #FF9800;
+  --risk-high: #F44336;
+  --chart-track: #EEF2F7;
+  --agent-color: #7C3AED;
   /* 阴影 */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, .08);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, .1);

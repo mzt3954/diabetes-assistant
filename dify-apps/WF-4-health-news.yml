@@ -1,0 +1,186 @@
+version: 0.6.0
+kind: app
+app:
+  name: WF-4 健康资讯生成
+  description: 生成标签 + 文章
+  icon: 📰
+  icon_type: emoji
+  icon_background: '#FFEAD5'
+  mode: workflow
+  use_icon_as_answer_icon: false
+dependencies: []
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features: {}
+  graph:
+    nodes:
+    - id: news_start
+      type: custom
+      data:
+        type: start
+        title: 开始
+        variables:
+        - label: 用户画像
+          variable: userInfo
+          type: paragraph
+          required: false
+        - label: 指定标签
+          variable: tag
+          type: text-input
+          required: false
+          max_length: 30
+      position:
+        x: 40
+        y: 240
+      positionAbsolute:
+        x: 40
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    - id: news_llm
+      type: custom
+      data:
+        type: llm
+        title: 生成资讯
+        model:
+          provider: langgenius/deepseek/deepseek
+          name: deepseek-v4-flash
+          mode: chat
+          completion_params:
+            temperature: 0.6
+        prompt_template:
+        - id: news_llm-system
+          role: system
+          text: 你是糖尿病健康科普编辑，内容须循证、通俗、可执行，不夸大疗效，不给出具体用药剂量。你只输出一个 JSON 对象，绝不用三反引号包裹，绝不输出任何解释、前言或后记。
+        - id: news_llm-user
+          role: user
+          text: '请生成一篇糖尿病健康资讯。
+
+
+            用户画像（JSON）：{{#news_start.userInfo#}}
+
+            指定标签（可为空）：{{#news_start.tag#}}
+
+
+            严格输出如下 JSON：
+
+            {"tags":["饮食指导","运动指南","生活习惯","糖尿病科普"],"tag":"饮食指导","article":{"title":"文章标题","tags":["饮食指导"],"author":"AI 健康助手","publish_time":"2026-09-12","category":"饮食指导","content":"## 小标题\n正文……"}}
+
+
+            要求：
+
+            1. tags 固定为「饮食指导、运动指南、生活习惯、糖尿病科普」这 4 个；
+
+            2. 若「指定标签」为空，从 tags 中任选一个作为 tag；否则 tag 等于指定标签；
+
+            3. article.tags 为含 tag 的数组；article.category 与 tag 一致；
+
+            4. article.content 用 Markdown，包含 3–5 个二级标题（##），总长 600–900 字；
+
+            5. publish_time 用今天的日期，格式 YYYY-MM-DD；author 固定「AI 健康助手」。
+
+
+            【知识库检索结果】以下内容来自糖尿病专业文档知识库，请以此为准，不要编造：
+
+            {{#news_kb.result#}}'
+        context:
+          enabled: false
+          variable_selector: []
+        vision:
+          enabled: false
+      position:
+        x: 680
+        y: 240
+      positionAbsolute:
+        x: 680
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    - id: news_end
+      type: custom
+      data:
+        type: end
+        title: 输出
+        outputs:
+        - variable: result
+          value_selector:
+          - news_llm
+          - text
+          value_type: string
+      position:
+        x: 1000
+        y: 240
+      positionAbsolute:
+        x: 1000
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    - id: news_kb
+      type: custom
+      data:
+        type: knowledge-retrieval
+        title: 知识库检索（糖尿病专业文档）
+        desc: 检索 knowledge-base/ 下 6 份专业文档，为回答提供事实依据
+        query_variable_selector:
+        - news_start
+        - tag
+        dataset_ids: []
+        retrieval_mode: multiple
+        multiple_retrieval_config:
+          top_k: 4
+          score_threshold: 0.5
+      position:
+        x: 360
+        y: 240
+      positionAbsolute:
+        x: 360
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 90
+    edges:
+    - id: news_start-source-news_kb-target
+      source: news_start
+      target: news_kb
+      type: custom
+      data:
+        sourceType: start
+        targetType: knowledge-retrieval
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    - id: news_kb-source-news_llm-target
+      source: news_kb
+      target: news_llm
+      type: custom
+      data:
+        sourceType: knowledge-retrieval
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    - id: news_llm-source-news_end-target
+      source: news_llm
+      target: news_end
+      type: custom
+      data:
+        sourceType: llm
+        targetType: end
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.8

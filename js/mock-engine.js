@@ -33,9 +33,20 @@
     var limit = (sex === '女') ? 85 : 90;
     return waist >= limit ? 3 : 0;
   }
+
+  /**
+   * 是/否型字段判定。
+   * 必须用白名单精确匹配：早期实现用 /有|是|yes|true|1/ 做子串匹配，
+   * 「没有」「无家族史（含"有"字的变体）」会被误判为「有」而多计 5 分。
+   */
+  var AFFIRMATIVE = ['有', '是', 'yes', 'y', 'true', '1', '确诊'];
+  function isAffirmative(v) {
+    if (v === null || v === undefined) return false;
+    return AFFIRMATIVE.indexOf(String(v).trim().toLowerCase()) >= 0;
+  }
+
   function scoreFamily(v) {
-    if (!v) return 0;
-    return /有|是|yes|true|1/.test(String(v)) ? 5 : 0;
+    return isAffirmative(v) ? 5 : 0;
   }
   function scorePressure(sp) {
     if (!sp) return 0;
@@ -44,7 +55,7 @@
   function scoreSex(sex) { return sex === '男' ? 1 : 0; }
   function scorePregnancy(v, sex) {
     if (sex !== '女') return 0;
-    return /有|是|yes|true|1/.test(String(v || '')) ? 4 : 0;
+    return isAffirmative(v) ? 4 : 0;
   }
 
   /** 归因：指出主要风险来源 */
@@ -54,8 +65,8 @@
     var names = top.map(function (i) { return i.label; });
 
     var disease = '2型糖尿病';
-    if (data.sex === '女' && /有|是/.test(String(data.isPregnancy || ''))) disease = '妊娠型糖尿病';
-    else if (/有|是/.test(String(data.familyHistory || '')) && scoreBMI(data.bmi) >= 5) disease = '2型糖尿病';
+    if (data.sex === '女' && isAffirmative(data.isPregnancy)) disease = '妊娠型糖尿病';
+    else if (isAffirmative(data.familyHistory) && scoreBMI(data.bmi) >= 5) disease = '2型糖尿病';
     else if (scoreAge(data.age) >= 4 && scoreBMI(data.bmi) < 3) disease = '1型糖尿病（需临床鉴别）';
 
     return { factors: names, disease: disease };
@@ -122,7 +133,7 @@
     var attr = attribute(items, { sex: sex, isPregnancy: d.isPregnancy, familyHistory: d.familyHistory, age: age, bmi: bmi });
 
     var disease = '未患病';
-    if (/是|有|确诊/.test(String(d.disease || ''))) disease = '已确诊糖尿病';
+    if (isAffirmative(d.disease)) disease = '已确诊糖尿病';
 
     return {
       score: score,
@@ -145,6 +156,11 @@
 
   /* ==================== 生活方案生成 ==================== */
 
+  /** 「是否已确诊」判定：兼容布尔式（是/有）与结果式（已确诊糖尿病）两种取值 */
+  function hasDiseaseFlag(v) {
+    return isAffirmative(v) || String(v == null ? '' : v).indexOf('确诊') >= 0;
+  }
+
   function generateLifePlan(userInfo, lifeState, userAdvice) {
     var tpl = (global.DPA_SEED && global.DPA_SEED.LIFE_PLAN_TEMPLATE) || [];
     var list = JSON.parse(JSON.stringify(tpl));
@@ -156,13 +172,14 @@
 
     // 根据是否已确诊/风险等级微调
     var risk = userInfo && userInfo.riskLevel;
-    if (risk === '高风险' || (userInfo && /是/.test(String(userInfo.disease || '')))) {
+    if (risk === '高风险' || (userInfo && hasDiseaseFlag(userInfo.disease))) {
       list.forEach(function (p) {
         if (p.type === '饮食') p.content = p.content.replace('七八分饱', '严格控制主食量至七分饱，餐后监测血糖');
         if (p.type === '运动') p.content += ' 运动前后监测血糖，避免低血糖。';
       });
     }
-    if (extra) list[0].content += ' ' + extra;
+    // 模板可能为空（数据被清空），必须判空后再拼接
+    if (extra && list.length) list[0].content += ' ' + extra;
 
     return {
       plans: list,
@@ -216,48 +233,82 @@
 
   /* ==================== 打卡分析 ==================== */
 
-  function analyzeCheckin(planList, punchList, days) {
+  /** 本地日期键；与 store.dateKey / ui.toDateKey 保持同一口径 */
+  function localKey(d) {
+    if (ui && typeof ui.toDateKey === 'function') return ui.toDateKey(d);
+    var p = function (n) { return n < 10 ? '0' + n : '' + n; };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+
+  /**
+   * 打卡分析（三维指标）
+   * @param {Array} planList  方案列表
+   * @param {Array} punchList 打卡记录
+   * @param {number} days     统计天数，默认 7
+   * @param {Date}  anchorDate 统计锚点（窗口末日），默认当前时间。
+   *                显式传入便于测试，也避免函数内部隐式依赖系统时钟。
+   *
+   * 【口径一致性】窗口日期、分子（已完成数）与分母（应完成数）全部限定在
+   * 同一 days 窗口内，且一律使用**本地**日期键。早期实现用 UTC 生成窗口、
+   * 却用本地日期写入打卡，导致 GMT+8 凌晨 00:00–08:00 当天打卡被漏计；
+   * 同时类型完成率的分子取全量历史、分母取 7 天，会算出 >100% 的比率。
+   */
+  function analyzeCheckin(planList, punchList, days, anchorDate) {
     days = days || 7;
-    var byDate = {};
-    (punchList || []).forEach(function (p) {
-      var d = p._date || String(p.punch_time || '').slice(0, 10);
-      byDate[d] = byDate[d] || {};
-      if (p.completion_status === '已完成') byDate[d][p._planId || p.message] = true;
+    var plans = planList || [];
+    var punches = punchList || [];
+    // 锚点支持 Date 或 'YYYY-MM-DD' 字符串，非法值回退到当前时间
+    var anchor = anchorDate instanceof Date ? anchorDate : (anchorDate ? new Date(anchorDate) : new Date());
+    if (isNaN(anchor.getTime())) anchor = new Date();
+    var totalPlan = plans.length;
+
+    /* 1. 窗口日期序列（本地日期键） */
+    var windowDates = [];
+    for (var i = days - 1; i >= 0; i--) {
+      var d = new Date(anchor.getTime());
+      d.setDate(d.getDate() - i);
+      windowDates.push(localKey(d));
+    }
+    var inWindow = Object.create(null);
+    windowDates.forEach(function (ds) { inWindow[ds] = true; });
+
+    /* 2. 归集窗口内的已完成打卡（分子与分母同口径） */
+    var doneByDate = Object.create(null);
+    var dietDone = 0, exDone = 0;
+    punches.forEach(function (p) {
+      if (p.completion_status !== '已完成') return;
+      var ds = p._date || localKey(new Date(p.punch_time));
+      if (!inWindow[ds]) return;
+      doneByDate[ds] = doneByDate[ds] || Object.create(null);
+      doneByDate[ds][p._planId === undefined ? p.message : p._planId] = true;
+      if (p.punch_type === '饮食') dietDone++;
+      if (p.punch_type === '运动') exDone++;
     });
 
-    var totalPlan = (planList || []).length;
     var expected = totalPlan * days;
     var done = 0;
-    var dayStats = [];
-    for (var i = days - 1; i >= 0; i--) {
-      var d = new Date();
-      d.setDate(d.getDate() - i);
-      var ds = d.toISOString().slice(0, 10);
-      var cnt = byDate[ds] ? Object.keys(byDate[ds]).length : 0;
+    var dayStats = windowDates.map(function (ds) {
+      var cnt = doneByDate[ds] ? Object.keys(doneByDate[ds]).length : 0;
       done += cnt;
-      dayStats.push({ date: ds, count: cnt, rate: totalPlan ? cnt / totalPlan : 0 });
-    }
+      return { date: ds, count: cnt, rate: totalPlan ? Math.min(1, cnt / totalPlan) : 0 };
+    });
     var rate = expected ? done / expected : 0;
 
-    // 连续打卡天数
+    /* 3. 连续打卡天数（自窗口末日向前） */
     var streak = 0;
     for (var j = dayStats.length - 1; j >= 0; j--) {
       if (dayStats[j].count > 0) streak++; else break;
     }
 
-    // 类型均衡度
-    var dietDone = 0, exDone = 0, dietTotal = 0, exTotal = 0;
-    (planList || []).forEach(function (p) {
+    /* 4. 类型均衡度 */
+    var dietTotal = 0, exTotal = 0;
+    plans.forEach(function (p) {
       if (p.type === '饮食') dietTotal++;
       if (p.type === '运动') exTotal++;
     });
-    (punchList || []).forEach(function (p) {
-      if (p.completion_status !== '已完成') return;
-      if (p.punch_type === '饮食') dietDone++;
-      if (p.punch_type === '运动') exDone++;
-    });
-    var dietRate = (dietTotal * days) ? dietDone / (dietTotal * days) : 0;
-    var exRate = (exTotal * days) ? exDone / (exTotal * days) : 0;
+    function clamp01(n) { return Math.max(0, Math.min(1, n)); }
+    var dietRate = (dietTotal * days) ? clamp01(dietDone / (dietTotal * days)) : 0;
+    var exRate = (exTotal * days) ? clamp01(exDone / (exTotal * days)) : 0;
     var balance = Math.min(dietRate, exRate);
 
     var C = CFG.CHECKIN;
@@ -270,19 +321,20 @@
     if (streak >= 3) suggestions.push('已连续打卡 ' + streak + ' 天，请继续保持，形成稳定的健康节律。');
     if (!suggestions.length) suggestions.push('各项完成情况良好，建议维持当前节奏，并根据身体反馈微调方案。');
 
+    var ratePct = Math.round(clamp01(rate) * 100);
     return {
       days: days,
       totalPlan: totalPlan,
       expected: expected,
       done: done,
-      rate: Math.round(rate * 100),
+      rate: ratePct,
       streak: streak,
       dietRate: Math.round(dietRate * 100),
       exerciseRate: Math.round(exRate * 100),
       balance: Math.round(balance * 100),
       dayStats: dayStats,
       evaluation: evaluation,
-      completionStatus: '近 ' + days + ' 天共应完成 ' + expected + ' 项，实际完成 ' + done + ' 项，完成率 ' + Math.round(rate * 100) + '%',
+      completionStatus: '近 ' + days + ' 天共应完成 ' + expected + ' 项，实际完成 ' + done + ' 项，完成率 ' + ratePct + '%',
       suggestions: suggestions,
       source: 'local'
     };
@@ -372,12 +424,30 @@
       return { action: 'list_articles', reply: '**文章列表（共 ' + s.articles + ' 篇，显示前 10）**\n\n' + arts, refresh: true };
     }
     if (/删除.*文章|清理文章/.test(q)) {
-      var m = /删除.*?(\d+)/.exec(q);
-      if (m) {
-        store.articles.remove(Number(m[1]));
-        return { action: 'delete_article', reply: '已删除文章 ID=' + m[1] + '。', refresh: true };
+      // 支持一次删除多篇（"删除文章 3 和 5"），并做去重
+      var ids = [];
+      var re = /\d+/g;
+      var mm;
+      while ((mm = re.exec(q)) !== null) ids.push(Number(mm[0]));
+      ids = ids.filter(function (id, i) { return ids.indexOf(id) === i; });
+
+      if (!ids.length) {
+        return { action: 'need_id', reply: '请指明要删除的文章 ID，例如："删除文章 3"。' };
       }
-      return { action: 'need_id', reply: '请指明要删除的文章 ID，例如："删除文章 3"。' };
+      var exist = ids.filter(function (id) { return !!store.articles.get(id); });
+      if (!exist.length) {
+        return { action: 'delete_articles', ids: [], reply: '未找到 ID 为 ' + ids.join('、') + ' 的文章，请核对后重试。', refresh: false };
+      }
+      // 破坏性操作**不**在本地引擎里直接执行，交由 UI 层二次确认
+      var titles = exist.map(function (id) {
+        return '- ID ' + id + '《' + store.articles.get(id).title + '》';
+      });
+      return {
+        action: 'delete_articles',
+        ids: exist,
+        reply: '即将删除 ' + exist.length + ' 篇文章：\n\n' + titles.join('\n') + '\n\n请确认后执行。',
+        refresh: false
+      };
     }
     if (/新增|添加|创建/.test(q) && /文章/.test(q)) {
       var art = store.articles.add({

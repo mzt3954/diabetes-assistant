@@ -1,0 +1,193 @@
+version: 0.6.0
+kind: app
+app:
+  name: WF-3 生活方案定制
+  description: 生成多条饮食 + 运动方案
+  icon: 🥗
+  icon_type: emoji
+  icon_background: '#E4FBCC'
+  mode: workflow
+  use_icon_as_answer_icon: false
+dependencies: []
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features: {}
+  graph:
+    nodes:
+    - id: plan_start
+      type: custom
+      data:
+        type: start
+        title: 开始
+        variables:
+        - label: 用户画像
+          variable: userInfo
+          type: paragraph
+          required: false
+        - label: 当前生活状态
+          variable: lifeState
+          type: paragraph
+          required: false
+          max_length: 500
+        - label: 用户诉求
+          variable: advice
+          type: paragraph
+          required: false
+          max_length: 500
+      position:
+        x: 40
+        y: 240
+      positionAbsolute:
+        x: 40
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    - id: plan_llm
+      type: custom
+      data:
+        type: llm
+        title: 生成生活方案
+        model:
+          provider: langgenius/deepseek/deepseek
+          name: deepseek-v4-flash
+          mode: chat
+          completion_params:
+            temperature: 0.4
+        prompt_template:
+        - id: plan_llm-system
+          role: system
+          text: 你是糖尿病生活方式干预的营养师与运动康复师，方案须符合医学营养治疗（MNT）与运动疗法循证依据。你只输出一个 JSON 对象，绝不用三反引号包裹，绝不输出任何解释、前言或后记。
+        - id: plan_llm-user
+          role: user
+          text: '请为该用户生成一日生活方案。
+
+
+            用户画像（JSON）：{{#plan_start.userInfo#}}
+
+            当前生活状态：{{#plan_start.lifeState#}}
+
+            用户诉求：{{#plan_start.advice#}}
+
+
+            严格输出如下 JSON：
+
+            {"plans":[{"type":"饮食","order":1,"time":"07:00","title":"营养早餐","content":"……"},{"type":"运动","order":1,"time":"08:30","title":"餐后快走","content":"……"}],"summary":"已为您生成 9 条生活方案……"}
+
+
+            要求：
+
+            1. plans 共 9 条：饮食 5 条（早/午/晚餐 + 两次加餐）、运动 4 条；
+
+            2. type 只能是「饮食」或「运动」；order 为同类内序号，从 1 开始；
+
+            3. time 用 HH:MM 24 小时制，且按时间从早到晚排列；
+
+            4. content 60–120 字，具体到食物种类与大致份量，或运动时长与强度；
+
+            5. summary 一句话总结，需含方案条数。
+
+
+            【知识库检索结果】以下内容来自糖尿病专业文档知识库，请以此为准，不要编造：
+
+            {{#plan_kb.result#}}'
+        context:
+          enabled: false
+          variable_selector: []
+        vision:
+          enabled: false
+      position:
+        x: 680
+        y: 240
+      positionAbsolute:
+        x: 680
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    - id: plan_end
+      type: custom
+      data:
+        type: end
+        title: 输出
+        outputs:
+        - variable: result
+          value_selector:
+          - plan_llm
+          - text
+          value_type: string
+      position:
+        x: 1000
+        y: 240
+      positionAbsolute:
+        x: 1000
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    - id: plan_kb
+      type: custom
+      data:
+        type: knowledge-retrieval
+        title: 知识库检索（糖尿病专业文档）
+        desc: 检索 knowledge-base/ 下 6 份专业文档，为回答提供事实依据
+        query_variable_selector:
+        - plan_start
+        - lifeState
+        dataset_ids: []
+        retrieval_mode: multiple
+        multiple_retrieval_config:
+          top_k: 4
+          score_threshold: 0.5
+      position:
+        x: 360
+        y: 240
+      positionAbsolute:
+        x: 360
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 90
+    edges:
+    - id: plan_start-source-plan_kb-target
+      source: plan_start
+      target: plan_kb
+      type: custom
+      data:
+        sourceType: start
+        targetType: knowledge-retrieval
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    - id: plan_kb-source-plan_llm-target
+      source: plan_kb
+      target: plan_llm
+      type: custom
+      data:
+        sourceType: knowledge-retrieval
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    - id: plan_llm-source-plan_end-target
+      source: plan_llm
+      target: plan_end
+      type: custom
+      data:
+        sourceType: llm
+        targetType: end
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.8

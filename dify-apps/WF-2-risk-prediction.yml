@@ -1,0 +1,328 @@
+version: 0.6.0
+kind: app
+app:
+  name: WF-2 个人信息与风险预测
+  description: 补全信息 → 判断患病 → 评分 → 归因 → 建议
+  icon: 📊
+  icon_type: emoji
+  icon_background: '#D1E9FF'
+  mode: workflow
+  use_icon_as_answer_icon: false
+dependencies: []
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features: {}
+  graph:
+    nodes:
+    - id: risk_start
+      type: custom
+      data:
+        type: start
+        title: 开始
+        variables:
+        - label: 年龄
+          variable: age
+          type: number
+          required: true
+        - label: 性别
+          variable: sex
+          type: text-input
+          required: true
+          max_length: 10
+        - label: 身高(cm)
+          variable: height
+          type: number
+          required: true
+        - label: 体重(kg)
+          variable: weight
+          type: number
+          required: true
+        - label: 腰围(cm)
+          variable: waistline
+          type: number
+          required: false
+        - label: 收缩压(mmHg)
+          variable: systolicPressure
+          type: number
+          required: false
+        - label: 糖尿病家族史
+          variable: familyHistory
+          type: text-input
+          required: false
+          max_length: 10
+        - label: 是否妊娠期
+          variable: isPregnancy
+          type: text-input
+          required: false
+          max_length: 10
+        - label: 是否已确诊糖尿病
+          variable: disease
+          type: text-input
+          required: false
+          max_length: 10
+      position:
+        x: 40
+        y: 240
+      positionAbsolute:
+        x: 40
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    - id: risk_llm
+      type: custom
+      data:
+        type: llm
+        title: 风险评估
+        model:
+          provider: langgenius/deepseek/deepseek
+          name: deepseek-v4-flash
+          mode: chat
+          completion_params:
+            temperature: 0.1
+        prompt_template:
+        - id: risk_llm-system
+          role: system
+          text: 你是糖尿病风险评估模型，依据《中国糖尿病风险评分表（CDRS）》口径进行评分。你只输出一个 JSON 对象，绝不用三反引号包裹，绝不输出任何解释、前言或后记。
+        - id: risk_llm-user
+          role: user
+          text: '请根据以下用户信息完成糖尿病风险评估。
+
+
+            用户信息：
+
+            - 年龄：{{#risk_start.age#}} 岁
+
+            - 性别：{{#risk_start.sex#}}
+
+            - 身高：{{#risk_start.height#}} cm
+
+            - 体重：{{#risk_start.weight#}} kg
+
+            - 腰围：{{#risk_start.waistline#}} cm
+
+            - 收缩压：{{#risk_start.systolicPressure#}} mmHg
+
+            - 糖尿病家族史：{{#risk_start.familyHistory#}}
+
+            - 是否妊娠期：{{#risk_start.isPregnancy#}}
+
+            - 是否已确诊糖尿病：{{#risk_start.disease#}}
+
+
+            严格输出如下 JSON：
+
+            {"score":12,"maxScore":27,"level":"中风险","probability":44,"bmi":26.4,"disease":"未患病","riskType":"2型糖尿病","factors":["糖尿病家族史","BMI 偏高"],"message":"您存在一定的糖尿病风险……","advice":["调整饮食结构……","饭后 1 小时快走 30 分钟……"]}
+
+
+            评分规则（满分 27 分）：
+
+            - 年龄 ≥45 岁 +4；≥60 岁 +6
+
+            - BMI ≥24 +3；≥28 +5
+
+            - 腰围 男≥90cm / 女≥85cm +3
+
+            - 收缩压 ≥130mmHg +3
+
+            - 有糖尿病家族史 +4
+
+            - 妊娠期 +3
+
+            - 已确诊糖尿病 +5
+
+            level 判定：score ≤8 → 「低风险」；9–15 → 「中风险」；≥16 → 「高风险」（必须用这三个词之一）
+
+            probability 为 0–100 的整数；bmi 保留 1 位小数；
+
+            disease 只能取「未患病」或「已患病」；riskType 取「1型糖尿病 / 2型糖尿病 / 妊娠型糖尿病 / 特殊型糖尿病 / 暂无明显倾向」之一；
+
+            factors 与 advice 各 2–4 条中文短句。
+
+
+            【规则引擎预计算结果】以下数值已由代码节点按 CDRS 变量集算出，必须原样采用，不得自行改动：
+
+            score={{#risk_calc.score#}}　level={{#risk_calc.level#}}　probability={{#risk_calc.probability#}}　bmi={{#risk_calc.bmi#}}　breakdown={{#risk_calc.breakdown#}}
+
+            你的任务是补充归因说明与个性化建议，并按要求输出 JSON。
+
+
+            【知识库检索结果】以下内容来自糖尿病专业文档知识库，请以此为准，不要编造：
+
+            {{#risk_kb.result#}}'
+        context:
+          enabled: false
+          variable_selector: []
+        vision:
+          enabled: false
+      position:
+        x: 1000
+        y: 240
+      positionAbsolute:
+        x: 1000
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    - id: risk_end
+      type: custom
+      data:
+        type: end
+        title: 输出
+        outputs:
+        - variable: result
+          value_selector:
+          - risk_llm
+          - text
+          value_type: string
+      position:
+        x: 1320
+        y: 240
+      positionAbsolute:
+        x: 1320
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    - id: risk_kb
+      type: custom
+      data:
+        type: knowledge-retrieval
+        title: 知识库检索（糖尿病专业文档）
+        desc: 检索 knowledge-base/ 下 6 份专业文档，为回答提供事实依据
+        query_variable_selector:
+        - risk_start
+        - disease
+        dataset_ids: []
+        retrieval_mode: multiple
+        multiple_retrieval_config:
+          top_k: 4
+          score_threshold: 0.5
+      position:
+        x: 360
+        y: 240
+      positionAbsolute:
+        x: 360
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 90
+    - id: risk_calc
+      type: custom
+      data:
+        type: code
+        title: CDRS 风险计算（代码节点）
+        desc: 确定性计算，避免把可算的指标交给大模型
+        code_language: python3
+        code: "def main(age: float, sex: str, height: float, weight: float,\n         waistline: float, systolicPressure: float,\n         familyHistory: str, isPregnancy: str) -> dict:\n    \"\"\"CDRS 中国糖尿病风险评分：与前端本地引擎保持完全一致的权重。\"\"\"\n\n    def affirmative(v):\n        return str(v or \"\").strip().lower() in (\"有\", \"是\", \"yes\", \"y\", \"true\", \"1\")\n\n    # 年龄：<40 -> 0；40-49 -> 2；50-59 -> 4；>=60 -> 6\n    if age < 40:\n        s_age = 0\n    elif age < 50:\n        s_age = 2\n    elif age < 60:\n        s_age = 4\n    else:\n        s_age = 6\n\n    bmi = round(weight / ((height / 100.0) ** 2), 1) if height > 0 else 0.0\n\n    if bmi < 24:\n        s_bmi = 0\n    elif bmi < 28:\n        s_bmi = 3\n    else:\n        s_bmi = 5\n\n    limit = 85 if str(sex).strip() == \"女\" else 90\n    s_waist = 3 if (waistline and waistline >= limit) else 0\n    s_family = 5 if affirmative(familyHistory) else 0\n    s_bp = 3 if (systolicPressure and systolicPressure >= 130) else 0\n    s_sex =\
+          \ 1 if str(sex).strip() == \"男\" else 0\n    s_preg = 4 if (str(sex).strip() == \"女\" and affirmative(isPregnancy)) else 0\n\n    score = s_age + s_bmi + s_waist + s_family + s_bp + s_sex + s_preg\n    score = max(0, min(27, score))\n\n    if score <= 8:\n        level = \"低风险\"\n    elif score <= 15:\n        level = \"中风险\"\n    else:\n        level = \"高风险\"\n\n    probability = min(95, round(score / 27.0 * 100))\n\n    return {\n        \"score\": score,\n        \"maxScore\": 27,\n        \"level\": level,\n        \"probability\": probability,\n        \"bmi\": bmi,\n        \"breakdown\": \"年龄{} BMI{} 腰围{} 家族史{} 血压{} 性别{} 妊娠{}\".format(\n            s_age, s_bmi, s_waist, s_family, s_bp, s_sex, s_preg)\n    }\n"
+        variables:
+        - variable: age
+          value_selector:
+          - risk_start
+          - age
+        - variable: sex
+          value_selector:
+          - risk_start
+          - sex
+        - variable: height
+          value_selector:
+          - risk_start
+          - height
+        - variable: weight
+          value_selector:
+          - risk_start
+          - weight
+        - variable: waistline
+          value_selector:
+          - risk_start
+          - waistline
+        - variable: systolicPressure
+          value_selector:
+          - risk_start
+          - systolicPressure
+        - variable: familyHistory
+          value_selector:
+          - risk_start
+          - familyHistory
+        - variable: isPregnancy
+          value_selector:
+          - risk_start
+          - isPregnancy
+        outputs:
+          score:
+            type: number
+          maxScore:
+            type: number
+          level:
+            type: string
+          probability:
+            type: number
+          bmi:
+            type: number
+          breakdown:
+            type: number
+      position:
+        x: 680
+        y: 240
+      positionAbsolute:
+        x: 680
+        y: 240
+      sourcePosition: right
+      targetPosition: left
+      width: 244
+      height: 110
+    edges:
+    - id: risk_start-source-risk_kb-target
+      source: risk_start
+      target: risk_kb
+      type: custom
+      data:
+        sourceType: start
+        targetType: knowledge-retrieval
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    - id: risk_kb-source-risk_calc-target
+      source: risk_kb
+      target: risk_calc
+      type: custom
+      data:
+        sourceType: knowledge-retrieval
+        targetType: code
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    - id: risk_calc-source-risk_llm-target
+      source: risk_calc
+      target: risk_llm
+      type: custom
+      data:
+        sourceType: code
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    - id: risk_llm-source-risk_end-target
+      source: risk_llm
+      target: risk_end
+      type: custom
+      data:
+        sourceType: llm
+        targetType: end
+        isInIteration: false
+        isInLoop: false
+      sourceHandle: source
+      targetHandle: target
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.8
