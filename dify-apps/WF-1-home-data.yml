@@ -1,7 +1,7 @@
 version: 0.6.0
 kind: app
 app:
-  name: WF-1 首页数据管理
+  name: 首页数据管理
   description: 返回首页文章列表与糖尿病类型数据
   icon: 🏠
   icon_type: emoji

@@ -1,7 +1,7 @@
 version: 0.6.0
 kind: app
 app:
-  name: WF-3 生活方案定制
+  name: 生活方案定制
   description: 生成多条饮食 + 运动方案
   icon: 🥗
   icon_type: emoji

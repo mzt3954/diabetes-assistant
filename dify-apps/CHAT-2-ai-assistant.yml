@@ -1,7 +1,7 @@
 version: 0.6.0
 kind: app
 app:
-  name: CHAT-2 AI智能助手
+  name: AI智能助手
   description: 科普 / 信息管理 / 方案制定
   icon: 🤖
   icon_type: emoji

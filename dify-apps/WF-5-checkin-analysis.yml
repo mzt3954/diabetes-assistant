@@ -1,7 +1,7 @@
 version: 0.6.0
 kind: app
 app:
-  name: WF-5 打卡分析
+  name: 打卡分析
   description: 分析近 7 日生活状态
   icon: ✅
   icon_type: emoji

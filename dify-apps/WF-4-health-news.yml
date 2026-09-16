@@ -1,7 +1,7 @@
 version: 0.6.0
 kind: app
 app:
-  name: WF-4 健康资讯生成
+  name: 健康资讯生成
   description: 生成标签 + 文章
   icon: 📰
   icon_type: emoji

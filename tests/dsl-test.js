@@ -96,10 +96,25 @@ function collectStrings(v, out) {
   return out;
 }
 
-/** 从 app.name 里识别编号，如 "WF-2 个人信息与风险预测" → "WF-2" */
+/** 从应用名里识别编号（兼容旧命名 "WF-2 个人信息与风险预测"） */
 function codeOf(name) {
   const m = String(name || '').match(/^(WF-\d|CHAT-\d|AGENT-\d)/);
   return m ? m[1] : null;
+}
+
+/** 从文件名里识别编号，如 "WF-2-risk-prediction.yml" → "WF-2" */
+function codeOfFile(file) {
+  const m = String(file || '').match(/^(WF-\d|CHAT-\d|AGENT-\d)/);
+  return m ? m[1] : null;
+}
+
+/**
+ * 应用编号来源：**优先取文件名前缀**。
+ * 应用显示名已按产品要求去掉 WF-/CHAT-/AGENT- 前缀，编号只保留在文件名与文档中，
+ * 因此这里不能再依赖 app.name 解析编号。
+ */
+function codeOfDoc(d) {
+  return codeOfFile(d && d.file) || codeOf(d && d.doc && d.doc.app && d.doc.app.name);
 }
 
 /* ================================================================
@@ -113,7 +128,7 @@ test('dify-apps/ 下恰好 8 个 DSL 文件', () => {
 });
 
 test('8 个应用编号齐备且无多余', () => {
-  const found = DOCS.map((d) => codeOf(d.doc.app && d.doc.app.name));
+  const found = DOCS.map((d) => codeOfDoc(d));
   Object.keys(EXPECTED).forEach((code) => {
     assert(found.indexOf(code) > -1, '缺少 ' + code);
   });
@@ -151,7 +166,7 @@ DOCS.forEach(({ file, doc }) => {
   });
 
   test(file + ' 模式与预期一致', () => {
-    const code = codeOf(doc.app.name);
+    const code = codeOfDoc({ file, doc });
     eq(doc.app.mode, EXPECTED[code], code + ' 的 mode');
   });
 });

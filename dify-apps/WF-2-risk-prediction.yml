@@ -1,7 +1,7 @@
 version: 0.6.0
 kind: app
 app:
-  name: WF-2 个人信息与风险预测
+  name: 个人信息与风险预测
   description: 补全信息 → 判断患病 → 评分 → 归因 → 建议
   icon: 📊
   icon_type: emoji

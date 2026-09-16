@@ -1,7 +1,7 @@
 version: "0.6.0"
 kind: app
 app:
-  name: AGENT-1 AI管理助手
+  name: AI管理助手
   description: 自然语言管理网站数据
   icon: 🛠️
   icon_type: emoji

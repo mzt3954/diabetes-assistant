@@ -1,7 +1,7 @@
 version: 0.6.0
 kind: app
 app:
-  name: CHAT-1 医师咨询助手
+  name: 医师咨询助手
   description: 糖尿病在线咨询（多轮对话）
   icon: 🩺
   icon_type: emoji

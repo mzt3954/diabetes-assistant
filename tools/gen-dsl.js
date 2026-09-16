@@ -153,7 +153,7 @@ const JSON_ONLY = '你只输出一个 JSON 对象，绝不用三反引号包裹�
 
 /* ---------- WF-1 首页数据管理 ---------- */
 const WF1 = makeApp({
-  name: 'WF-1 首页数据管理',
+  name: '首页数据管理',
   mode: 'workflow',
   icon: '🏠', iconBg: '#FFEAD5',
   description: '返回首页文章列表与糖尿病类型数据',
@@ -184,7 +184,7 @@ const WF1 = makeApp({
 
 /* ---------- WF-2 个人信息与风险预测 ---------- */
 const WF2 = makeApp({
-  name: 'WF-2 个人信息与风险预测',
+  name: '个人信息与风险预测',
   mode: 'workflow',
   icon: '📊', iconBg: '#D1E9FF',
   description: '补全信息 → 判断患病 → 评分 → 归因 → 建议',
@@ -242,7 +242,7 @@ const WF2 = makeApp({
 
 /* ---------- WF-3 生活计划定制 ---------- */
 const WF3 = makeApp({
-  name: 'WF-3 生活方案定制',
+  name: '生活方案定制',
   mode: 'workflow',
   icon: '🥗', iconBg: '#E4FBCC',
   description: '生成多条饮食 + 运动方案',
@@ -280,7 +280,7 @@ const WF3 = makeApp({
 
 /* ---------- WF-4 健康资讯生成 ---------- */
 const WF4 = makeApp({
-  name: 'WF-4 健康资讯生成',
+  name: '健康资讯生成',
   mode: 'workflow',
   icon: '📰', iconBg: '#FFEAD5',
   description: '生成标签 + 文章',
@@ -316,7 +316,7 @@ const WF4 = makeApp({
 
 /* ---------- WF-5 打卡分析 ---------- */
 const WF5 = makeApp({
-  name: 'WF-5 打卡分析',
+  name: '打卡分析',
   mode: 'workflow',
   icon: '✅', iconBg: '#E4FBCC',
   description: '分析近 7 日生活状态',
@@ -370,7 +370,7 @@ const DOCTOR_PROMPT = [
 ].join('\n');
 
 const CHAT1 = makeApp({
-  name: 'CHAT-1 医师咨询助手',
+  name: '医师咨询助手',
   mode: 'advanced-chat',
   icon: '🩺', iconBg: '#D1E9FF',
   description: '糖尿病在线咨询（多轮对话）',
@@ -408,7 +408,7 @@ const ASSISTANT_PROMPT = [
 ].join('\n');
 
 const CHAT2 = makeApp({
-  name: 'CHAT-2 AI智能助手',
+  name: 'AI智能助手',
   mode: 'advanced-chat',
   icon: '🤖', iconBg: '#E4FBCC',
   description: '科普 / 信息管理 / 方案制定',
@@ -446,7 +446,7 @@ const ADMIN_PROMPT = [
 ].join('\n');
 
 const AGENT1 = makeApp({
-  name: 'AGENT-1 AI管理助手',
+  name: 'AI管理助手',
   mode: 'advanced-chat',
   icon: '🛠️', iconBg: '#FFEAD5',
   description: '自然语言管理网站数据',
