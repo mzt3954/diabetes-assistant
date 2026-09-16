@@ -1,0 +1,458 @@
+/* ==========================================================
+   糖尿病预治智能助手 — Design Tokens
+   v3.0 · 医疗清新风格 / 明亮 + 深色双主题
+   ========================================================== */
+
+/* ---------- 基础色板 ---------- */
+:root {
+  /* Primary: Professional Blue (#2563EB) */
+  --blue-50: #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-200: #bfdbfe;
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --blue-800: #1e40af;
+  --blue-900: #1e3a8a;
+  --blue-950: #172554;
+
+  /* Secondary: Calm Green (#10B981) */
+  --green-50: #ecfdf5;
+  --green-100: #d1fae5;
+  --green-200: #a7f3d0;
+  --green-300: #6ee7b7;
+  --green-400: #34d399;
+  --green-500: #10b981;
+  --green-600: #059669;
+  --green-700: #047857;
+  --green-800: #065f46;
+  --green-900: #064e3b;
+  --green-950: #022c22;
+
+  /* Accent / Warning: Amber */
+  --amber-50: #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-300: #fcd34d;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+  --amber-800: #92400e;
+  --amber-900: #78350f;
+  --amber-950: #451a03;
+
+  /* Error: Rose */
+  --rose-50: #fff1f2;
+  --rose-100: #ffe4e6;
+  --rose-200: #fecdd3;
+  --rose-300: #fda4af;
+  --rose-400: #fb7185;
+  --rose-500: #f43f5e;
+  --rose-600: #e11d48;
+  --rose-700: #be123c;
+  --rose-800: #9f1239;
+  --rose-900: #881337;
+  --rose-950: #4c0519;
+
+  /* Info: Sky */
+  --sky-50: #f0f9ff;
+  --sky-100: #e0f2fe;
+  --sky-200: #bae6fd;
+  --sky-300: #7dd3fc;
+  --sky-400: #38bdf8;
+  --sky-500: #0ea5e9;
+  --sky-600: #0284c7;
+  --sky-700: #0369a1;
+  --sky-800: #075985;
+  --sky-900: #0c4a6e;
+  --sky-950: #082f49;
+
+  /* Purple: Violet */
+  --violet-50: #f5f3ff;
+  --violet-100: #ede9fe;
+  --violet-200: #ddd6fe;
+  --violet-300: #c4b5fd;
+  --violet-400: #a78bfa;
+  --violet-500: #8b5cf6;
+  --violet-600: #7c3aed;
+  --violet-700: #6d28d9;
+  --violet-800: #5b21b6;
+  --violet-900: #4c1d95;
+  --violet-950: #2e1065;
+
+  /* Teal */
+  --teal-50: #f0fdfa;
+  --teal-100: #ccfbf1;
+  --teal-200: #99f6e4;
+  --teal-300: #5eead4;
+  --teal-400: #2dd4bf;
+  --teal-500: #14b8a6;
+  --teal-600: #0d9488;
+  --teal-700: #0f766e;
+  --teal-800: #115e59;
+  --teal-900: #134e4a;
+  --teal-950: #042f2e;
+
+  /* Neutral: Slate */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --slate-950: #020617;
+}
+
+/* ---------- 语义化令牌（明亮模式） ---------- */
+:root {
+  /* 主题色 */
+  --primary: var(--blue-600);
+  --primary-light: var(--blue-100);
+  --primary-soft: var(--blue-50);
+  --primary-dark: var(--blue-700);
+  --primary-contrast: #ffffff;
+
+  --secondary: var(--green-500);
+  --secondary-light: var(--green-100);
+  --secondary-soft: var(--green-50);
+  --secondary-dark: var(--green-700);
+  --secondary-contrast: #ffffff;
+
+  --accent: var(--amber-500);
+  --accent-light: var(--amber-100);
+  --accent-soft: var(--amber-50);
+  --accent-dark: var(--amber-700);
+  --accent-contrast: #ffffff;
+
+  /* 功能色 */
+  --success: var(--green-500);
+  --success-light: var(--green-100);
+  --success-soft: var(--green-50);
+  --success-dark: var(--green-700);
+
+  --warning: var(--amber-500);
+  --warning-light: var(--amber-100);
+  --warning-soft: var(--amber-50);
+  --warning-dark: var(--amber-700);
+
+  --error: var(--rose-500);
+  --error-light: var(--rose-100);
+  --error-soft: var(--rose-50);
+  --error-dark: var(--rose-700);
+
+  --info: var(--sky-500);
+  --info-light: var(--sky-100);
+  --info-soft: var(--sky-50);
+  --info-dark: var(--sky-700);
+
+  --purple: var(--violet-500);
+  --purple-light: var(--violet-100);
+  --purple-soft: var(--violet-50);
+
+  --teal: var(--teal-500);
+  --teal-light: var(--teal-100);
+  --teal-soft: var(--teal-50);
+
+  /* 背景与表面 */
+  --bg-page: var(--slate-50);
+  --bg-card: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(15, 23, 42, 0.45);
+  --bg-hover: var(--slate-100);
+  --bg-active: var(--slate-200);
+
+  /* 文字 */
+  --text-primary: var(--slate-900);
+  --text-secondary: var(--slate-600);
+  --text-muted: var(--slate-400);
+  --text-on-primary: #ffffff;
+  --text-on-dark: #ffffff;
+
+  /* 边框 */
+  --border-color: var(--slate-200);
+  --border-light: var(--slate-100);
+  --border-strong: var(--slate-300);
+  --focus-ring: var(--blue-200);
+
+  /* 风险与图表 */
+  --risk-low: var(--green-500);
+  --risk-mid: var(--amber-500);
+  --risk-high: var(--rose-500);
+  --chart-track: var(--slate-200);
+  --agent-color: var(--violet-600);
+
+  /* 阴影：柔和、医疗感 */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.07), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 24px rgba(15, 23, 42, 0.1), 0 4px 8px rgba(15, 23, 42, 0.04);
+  --shadow-xl: 0 20px 40px rgba(15, 23, 42, 0.12), 0 8px 16px rgba(15, 23, 42, 0.06);
+
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  --radius-round: 50%; /* 兼容旧版 */
+
+  /* 间距 */
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-15: 15px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-20: 20px;
+  --space-22: 22px;
+  --space-24: 24px;
+  --space-28: 28px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+
+  /* 兼容旧间距命名 */
+  --spacing-xs: var(--space-4);
+  --spacing-sm: var(--space-8);
+  --spacing-md: var(--space-16);
+  --spacing-lg: var(--space-24);
+  --spacing-xl: var(--space-32);
+
+  /* 字体 */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* 字号 */
+  --font-size-12: 12px;
+  --font-size-13: 13px;
+  --font-size-14: 14px;
+  --font-size-15: 15px;
+  --font-size-16: 16px;
+  --font-size-17: 17px;
+  --font-size-18: 18px;
+  --font-size-19: 19px;
+  --font-size-20: 20px;
+  --font-size-22: 22px;
+  --font-size-24: 24px;
+  --font-size-28: 28px;
+  --font-size-32: 32px;
+
+  /* 行高 */
+  --leading-tight: 1.25;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
+
+  /* 字重 */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Z-Index */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-overlay: 1040;
+  --z-modal: 1050;
+  --z-toast: 1060;
+  --z-tooltip: var(--z-toast);
+
+  /* 动效 */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 350ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* 兼容旧过渡变量 */
+  --transition-fast: var(--duration-fast) var(--ease-out);
+  --transition-normal: var(--duration-normal) var(--ease-out);
+
+  /* 旧版变量别名，保证既有 JS / HTML 不报错 */
+  --primary-color: var(--primary);
+  --secondary-color: var(--secondary);
+  --accent-color: var(--accent);
+  --success-color: var(--success);
+  --warning-color: var(--warning);
+  --error-color: var(--error);
+  --info-color: var(--info);
+  --purple-color: var(--purple);
+  --teal-color: var(--teal);
+  --bg-color: var(--bg-page);
+  --bg-white: var(--bg-card);
+  --bg-gray: var(--bg-hover);
+  --text-white: #ffffff;
+  --font-family: var(--font-sans);
+}
+
+/* ---------- 深色模式 ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --primary: var(--blue-500);
+    --primary-light: var(--blue-900);
+    --primary-soft: var(--blue-950);
+    --primary-dark: var(--blue-400);
+    --primary-contrast: #ffffff;
+
+    --secondary: var(--green-500);
+    --secondary-light: var(--green-900);
+    --secondary-soft: var(--green-950);
+    --secondary-dark: var(--green-400);
+
+    --accent: var(--amber-500);
+    --accent-light: var(--amber-900);
+    --accent-soft: var(--amber-950);
+    --accent-dark: var(--amber-400);
+
+    --success: var(--green-500);
+    --success-light: var(--green-900);
+    --success-soft: var(--green-950);
+    --success-dark: var(--green-400);
+
+    --warning: var(--amber-500);
+    --warning-light: var(--amber-900);
+    --warning-soft: var(--amber-950);
+    --warning-dark: var(--amber-400);
+
+    --error: var(--rose-500);
+    --error-light: var(--rose-900);
+    --error-soft: var(--rose-950);
+    --error-dark: var(--rose-400);
+
+    --info: var(--sky-500);
+    --info-light: var(--sky-900);
+    --info-soft: var(--sky-950);
+    --info-dark: var(--sky-400);
+
+    --purple: var(--violet-400);
+    --purple-light: var(--violet-900);
+    --purple-soft: var(--violet-950);
+
+    --teal: var(--teal-400);
+    --teal-light: var(--teal-900);
+    --teal-soft: var(--teal-950);
+
+    --bg-page: var(--slate-950);
+    --bg-card: var(--slate-900);
+    --bg-elevated: var(--slate-800);
+    --bg-overlay: rgba(2, 6, 23, 0.7);
+    --bg-hover: rgba(255, 255, 255, 0.05);
+    --bg-active: rgba(255, 255, 255, 0.08);
+
+    --text-primary: var(--slate-100);
+    --text-secondary: var(--slate-400);
+    --text-muted: var(--slate-500);
+
+    --border-color: var(--slate-800);
+    --border-light: var(--slate-900);
+    --border-strong: var(--slate-700);
+    --focus-ring: var(--blue-800);
+
+    --risk-low: var(--green-400);
+    --risk-mid: var(--amber-400);
+    --risk-high: var(--rose-400);
+    --chart-track: var(--slate-800);
+    --agent-color: var(--violet-400);
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.25);
+    --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.45), 0 4px 8px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.5), 0 8px 16px rgba(0, 0, 0, 0.35);
+  }
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --primary: var(--blue-500);
+  --primary-light: var(--blue-900);
+  --primary-soft: var(--blue-950);
+  --primary-dark: var(--blue-400);
+  --primary-contrast: #ffffff;
+
+  --secondary: var(--green-500);
+  --secondary-light: var(--green-900);
+  --secondary-soft: var(--green-950);
+  --secondary-dark: var(--green-400);
+
+  --accent: var(--amber-500);
+  --accent-light: var(--amber-900);
+  --accent-soft: var(--amber-950);
+  --accent-dark: var(--amber-400);
+
+  --success: var(--green-500);
+  --success-light: var(--green-900);
+  --success-soft: var(--green-950);
+  --success-dark: var(--green-400);
+
+  --warning: var(--amber-500);
+  --warning-light: var(--amber-900);
+  --warning-soft: var(--amber-950);
+  --warning-dark: var(--amber-400);
+
+  --error: var(--rose-500);
+  --error-light: var(--rose-900);
+  --error-soft: var(--rose-950);
+  --error-dark: var(--rose-400);
+
+  --info: var(--sky-500);
+  --info-light: var(--sky-900);
+  --info-soft: var(--sky-950);
+  --info-dark: var(--sky-400);
+
+  --purple: var(--violet-400);
+  --purple-light: var(--violet-900);
+  --purple-soft: var(--violet-950);
+
+  --teal: var(--teal-400);
+  --teal-light: var(--teal-900);
+  --teal-soft: var(--teal-950);
+
+  --bg-page: var(--slate-950);
+  --bg-card: var(--slate-900);
+  --bg-elevated: var(--slate-800);
+  --bg-overlay: rgba(2, 6, 23, 0.7);
+  --bg-hover: rgba(255, 255, 255, 0.05);
+  --bg-active: rgba(255, 255, 255, 0.08);
+
+  --text-primary: var(--slate-100);
+  --text-secondary: var(--slate-400);
+  --text-muted: var(--slate-500);
+
+  --border-color: var(--slate-800);
+  --border-light: var(--slate-900);
+  --border-strong: var(--slate-700);
+  --focus-ring: var(--blue-800);
+
+  --risk-low: var(--green-400);
+  --risk-mid: var(--amber-400);
+  --risk-high: var(--rose-400);
+  --chart-track: var(--slate-800);
+  --agent-color: var(--violet-400);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.45), 0 4px 8px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.5), 0 8px 16px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+}
