@@ -130,13 +130,13 @@
       if (!list || !error) return;
 
       var observer = new MutationObserver(function () {
-        if (list.querySelectorAll('.faq-item').length > 0) error.classList.add('hidden');
+        if (list.querySelectorAll('.faq-item').length > 0) error.classList.remove('show');
       });
       observer.observe(list, { childList: true });
 
       setTimeout(function () {
         if (list.querySelectorAll('.faq-item').length === 0 && !list.querySelector('.empty-state')) {
-          error.classList.remove('hidden');
+          error.classList.add('show');
         }
       }, 3000);
     });

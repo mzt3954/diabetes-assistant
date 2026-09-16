@@ -135,7 +135,7 @@
       var observer = new MutationObserver(function () {
         var cards = list.querySelectorAll('.doctor-card');
         if (cards.length > 0) {
-          error.classList.add('hidden');
+          error.classList.remove('show');
         } else if (!list.querySelector('.empty-state') && list.innerHTML.trim() !== '') {
           list.innerHTML = emptyHtml;
         }
@@ -149,7 +149,7 @@
           if (window.DPA && DPA.store && DPA.store.doctors && DPA.store.doctors.all().length === 0) {
             list.innerHTML = emptyHtml;
           } else {
-            error.classList.remove('hidden');
+            error.classList.add('show');
           }
         }
       }, 3000);

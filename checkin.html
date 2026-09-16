@@ -77,9 +77,9 @@
         <div id="analysisSkeleton" class="hidden">
           <div class="analysis-card">
             <div class="analysis-metrics">
-              <div class="analysis-metric"><div class="skeleton-line" style="width:60%;height:36px;margin:0 auto"></div><div class="skeleton-line" style="width:40%;height:12px;margin:8px auto 0"></div></div>
-              <div class="analysis-metric"><div class="skeleton-line" style="width:60%;height:36px;margin:0 auto"></div><div class="skeleton-line" style="width:40%;height:12px;margin:8px auto 0"></div></div>
-              <div class="analysis-metric"><div class="skeleton-line" style="width:60%;height:36px;margin:0 auto"></div><div class="skeleton-line" style="width:40%;height:12px;margin:8px auto 0"></div></div>
+              <div class="analysis-metric-skeleton"><div class="skeleton-line" style="width:60%;height:36px;margin:0 auto"></div><div class="skeleton-line" style="width:40%;height:12px;margin:8px auto 0"></div></div>
+              <div class="analysis-metric-skeleton"><div class="skeleton-line" style="width:60%;height:36px;margin:0 auto"></div><div class="skeleton-line" style="width:40%;height:12px;margin:8px auto 0"></div></div>
+              <div class="analysis-metric-skeleton"><div class="skeleton-line" style="width:60%;height:36px;margin:0 auto"></div><div class="skeleton-line" style="width:40%;height:12px;margin:8px auto 0"></div></div>
             </div>
             <div class="skeleton-line" style="width:90%"></div>
             <div class="skeleton-line" style="width:75%"></div>
@@ -172,12 +172,12 @@
       var detailError = document.getElementById('detailError');
       if (detailList && detailError) {
         var detailObserver = new MutationObserver(function () {
-          if (detailList.querySelectorAll('.list-item').length > 0) detailError.classList.add('hidden');
+          if (detailList.querySelectorAll('.list-item').length > 0) detailError.classList.remove('show');
         });
         detailObserver.observe(detailList, { childList: true });
         setTimeout(function () {
           if (detailList.querySelectorAll('.list-item').length === 0 && !detailList.querySelector('.empty-state')) {
-            detailError.classList.remove('hidden');
+            detailError.classList.add('show');
           }
         }, 3000);
       }

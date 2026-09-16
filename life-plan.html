@@ -87,24 +87,6 @@
           <button class="plan-tab" data-type="其他" role="tab" aria-selected="false" aria-controls="planList">其他建议<span class="count" id="countOther">0</span></button>
         </div>
 
-        <!-- 骨架屏 -->
-        <div id="planSkeleton" class="hidden">
-          <div class="plan-item">
-            <div class="skeleton-block" style="width:24px;height:24px;border-radius:50%"></div>
-            <div style="flex:1">
-              <div class="skeleton-line" style="width:40%"></div>
-              <div class="skeleton-line" style="width:80%"></div>
-            </div>
-          </div>
-          <div class="plan-item">
-            <div class="skeleton-block" style="width:24px;height:24px;border-radius:50%"></div>
-            <div style="flex:1">
-              <div class="skeleton-line" style="width:35%"></div>
-              <div class="skeleton-line" style="width:70%"></div>
-            </div>
-          </div>
-        </div>
-
         <div id="planList" role="tabpanel"></div>
 
         <!-- 错误态 -->
@@ -129,6 +111,24 @@
         <div class="disclaimer mb-lg">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
           <span>方案由 AI 结合您的健康信息生成，仅供参考。具体饮食与运动计划请遵医嘱，并根据身体反馈及时调整。</span>
+        </div>
+      </div>
+
+      <!-- 骨架屏：必须放在 #planArea 之外，否则首次自动生成方案时会被一起隐藏 -->
+      <div id="planSkeleton" class="hidden">
+        <div class="plan-item">
+          <div class="skeleton-block" style="width:24px;height:24px;border-radius:50%"></div>
+          <div style="flex:1">
+            <div class="skeleton-line" style="width:40%"></div>
+            <div class="skeleton-line" style="width:80%"></div>
+          </div>
+        </div>
+        <div class="plan-item">
+          <div class="skeleton-block" style="width:24px;height:24px;border-radius:50%"></div>
+          <div style="flex:1">
+            <div class="skeleton-line" style="width:35%"></div>
+            <div class="skeleton-line" style="width:70%"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -221,14 +221,37 @@
       var planError = document.getElementById('planError');
       if (planList && planError) {
         var planObserver = new MutationObserver(function () {
-          if (planList.querySelectorAll('.plan-item').length > 0) planError.classList.add('hidden');
+          if (planList.querySelectorAll('.plan-item').length > 0) planError.classList.remove('show');
         });
         planObserver.observe(planList, { childList: true });
         setTimeout(function () {
           if (planList.querySelectorAll('.plan-item').length === 0 && !planList.querySelector('.empty-state')) {
-            planError.classList.remove('hidden');
+            planError.classList.add('show');
           }
         }, 3000);
+      }
+
+      // 首次进入会自动生成基础方案：生成期间先亮出骨架屏，避免页面长时间空白
+      var planAreaEl = document.getElementById('planArea');
+      var emptyEl = document.getElementById('emptyArea');
+      var skeletonEl = document.getElementById('planSkeleton');
+      if (planAreaEl && emptyEl && skeletonEl &&
+          planAreaEl.classList.contains('hidden') && emptyEl.classList.contains('hidden')) {
+        skeletonEl.classList.remove('hidden');
+        var revealed = false;
+        var skeletonObserver;
+        var reveal = function () {
+          if (revealed) return;
+          revealed = true;
+          skeletonEl.classList.add('hidden');
+          if (skeletonObserver) skeletonObserver.disconnect();
+        };
+        skeletonObserver = new MutationObserver(function () {
+          if (!planAreaEl.classList.contains('hidden') || !emptyEl.classList.contains('hidden')) reveal();
+        });
+        skeletonObserver.observe(planAreaEl, { attributes: true, attributeFilter: ['class'] });
+        skeletonObserver.observe(emptyEl, { attributes: true, attributeFilter: ['class'] });
+        setTimeout(reveal, 60000);
       }
     });
   </script>

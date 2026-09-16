@@ -321,11 +321,19 @@ test.describe('糖尿病预治智能助手 E2E', () => {
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(600);
-    const mbDisplay = await page.evaluate(() =>
-      getComputedStyle(document.querySelector('#articleList')).display);
+    // 不把断言绑死在 display 关键字上：重设计后窄屏用 flex column 实现单列，
+    // 这里改为校验真实布局结果——每行只有一张卡片（卡片宽度铺满列表）
+    const mobile = await page.evaluate(() => {
+      const list = document.querySelector('#articleList');
+      const card = list.querySelector('.article-card');
+      const cs = getComputedStyle(list);
+      const cols = cs.display === 'grid' ? cs.gridTemplateColumns.split(' ').filter(Boolean).length : 1;
+      return { cols, listW: list.getBoundingClientRect().width, cardW: card.getBoundingClientRect().width };
+    });
 
     expect(pcCols).toBe(2);
-    expect(mbDisplay).toBe('block');
+    expect(mobile.cols).toBe(1);
+    expect(Math.abs(mobile.listW - mobile.cardW)).toBeLessThan(4);
   });
 
 });

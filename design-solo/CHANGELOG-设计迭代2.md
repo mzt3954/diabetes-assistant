@@ -164,3 +164,50 @@
 - 未修改 `design-solo/` 之外的任何文件，根目录 13 个 HTML、`css/`、`js/` 保持原样。
 - 所有页面仍复用 `../js/*` 业务脚本，id 与 class 契约未破坏。
 - 所有新增可视化、插画、动效均不依赖外部 CDN 或 npm 包。
+
+---
+
+## 六、落地主站时的收尾修复（第二轮产出验证阶段发现并修复）
+
+第二轮成果合并进主站后，用真实浏览器逐页验证时发现 5 处问题，均已修复（`design-solo/` 与主站两份同步修改）：
+
+### 1. `personal.html` 缺少 `js/auth.js`（阻断级）
+- **现象**：页面报 `Cannot read properties of undefined (reading 'requireAuth')`，个人中心整页不可用；`smoke-test` 13 页中 1 页失败。
+- **原因**：迭代 2 重写该页时漏掉了 `auth.js` 的引入（其余 12 页正常）。
+- **修复**：在 `js/ui.js` 之后补回 `<script src="js/auth.js" defer></script>`。
+
+### 2. 趋势折线被整体放大（视觉缺陷）
+- **现象**：打卡页「近 7 日打卡趋势」的坐标轴文字被放大到约 34px，图表高度约 540px。
+- **原因**：`charts.js` 用固定 `viewBox="0 0 340 160"`，而 CSS 让 SVG 铺满容器宽度，宽屏下整体等比放大约 3.4 倍。
+- **修复**：`trendLine()` 改为读取容器实际宽度作为 `W`（`preserveAspectRatio` 改为 `xMidYMid meet`），viewBox 与显示尺寸 1:1；并加窗口 resize 防抖重绘。现高度 180px（窄屏 150px），文字 10px 正常。
+
+### 3. 错误态 CSS 契约与页面脚本不一致（6 页）
+- **现象**：`admin / checkin / doctor / health-news / help / life-plan` 的错误态永远不显示。
+- **原因**：迭代 2 的 `.error-state` 用 `display:none` + `.error-state.show` 控制，而各页内联脚本切的是 `.hidden` 类，两边不匹配。
+- **修复**：统一改为切换 `.show`（`add('show')` / `remove('show')`），与 CSS 契约一致。
+
+### 4. 打卡骨架屏污染指标计数
+- **现象**：`e2e` 第 6 条断言 `.analysis-metric` 数量应为 3，实际为 6。
+- **原因**：新增的 `#analysisSkeleton` 复用了 `.analysis-metric` 类名，3 个占位 + 3 个真实 = 6。
+- **修复**：骨架屏改用独立类 `.analysis-metric-skeleton`，并在 `pages.css` 中与 `.analysis-metric` 共用样式。
+
+### 5. 生活方案页首次进入整页空白
+- **现象**：无方案用户进入 `life-plan.html`，页面长时间只有页头，无任何内容。
+- **原因**：`lifeplan.js` 首次进入会自动生成基础方案，生成期间 `#emptyArea` 与 `#planArea` 都被隐藏；而迭代 2 新增的骨架屏 `#planSkeleton` 被放在 `#planArea` 内部，随父节点一起被隐藏，等于没写。
+- **修复**：把 `#planSkeleton` 移到 `#planArea` 之外，并在页面内联脚本里加"生成期间亮骨架屏 + 观察两个区域显隐后自动收起（60s 兜底）"的控制逻辑。
+
+### 6. 顺带更新的测试断言
+- `tests/e2e.spec.js` 第 20 条原本断言移动端 `#articleList` 的 `display === 'block'`。重设计后窄屏改用 `flex + column` 实现单列，语义等价但关键字不同。
+- 已改为**行为断言**：移动端列数为 1，且卡片宽度铺满列表容器（容差 4px），不再绑定具体 `display` 取值。
+
+### 修复后的回归结果
+
+| 测试套件 | 结果 |
+|---|---|
+| `logic-test` | 85 / 85 |
+| `smoke-test` | 13 / 13 |
+| `dsl-test` | 91 / 91 |
+| `transport-test` | 40 / 40 |
+| `integration-test` | 24 / 24 |
+| `e2e.spec`（Playwright） | 20 / 20 |
+| 自定义 13 页 × PC/移动端检查 | 0 控制台错误、0 横向溢出 |

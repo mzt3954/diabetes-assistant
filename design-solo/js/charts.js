@@ -44,7 +44,12 @@
     }
 
     var title = opts.title || '趋势分析';
-    var W = 340, H = 160, PAD = 28;
+    // 按容器实际宽度渲染：SVG 的 viewBox 与实际显示尺寸 1:1，避免被整体放大
+    // （否则坐标轴文字会随图形一起缩放，在宽屏上被拉到几十像素高）
+    var cw = container.clientWidth || 0;
+    var W = Math.max(260, Math.round((cw > 80 ? cw : 360) - 34));
+    var H = W < 480 ? 150 : 180;
+    var PAD = W < 480 ? 22 : 28;
     var gradId = uid('trendGrad');
     var primary = cssVar('--primary', '#2563eb');
     var primarySoft = cssVar('--primary-soft', '#eff6ff');
@@ -88,7 +93,7 @@
     container.innerHTML =
       '<div class="trend-chart">' +
         '<div class="trend-chart-title">' + escapeHtml(title) + '</div>' +
-        '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+        '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet">' +
           '<defs>' +
             '<linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1">' +
               '<stop offset="0%" stop-color="' + primary + '" stop-opacity="0.35"/>' +
@@ -102,6 +107,17 @@
           axisLabels +
         '</svg>' +
       '</div>';
+
+    if (!container.__dpaTrendBound) {
+      container.__dpaTrendBound = true;
+      var rt;
+      window.addEventListener('resize', function () {
+        clearTimeout(rt);
+        rt = setTimeout(function () {
+          if (doc.body && doc.body.contains(container)) trendLine(container, data, opts);
+        }, 200);
+      });
+    }
   }
 
   /* ---------- 进度环形图 ---------- */

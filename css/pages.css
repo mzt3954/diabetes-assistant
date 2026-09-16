@@ -774,7 +774,8 @@
   margin-bottom: var(--space-18);
 }
 
-.analysis-metric {
+.analysis-metric,
+.analysis-metric-skeleton {
   text-align: center;
 }
 
