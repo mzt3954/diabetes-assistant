@@ -43,15 +43,39 @@
     return value;
   }
 
+  /**
+   * 用户表变更钩子。
+   * js/db-client.js 订阅它，把本地用户表的增删改「写穿透」到 MySQL，
+   * 这样各个页面无需感知后端是否存在（离线时钩子为空，行为与原来一致）。
+   */
+  var usersChangedHandlers = [];
+  /** >0 表示当前写入来自「数据库镜像回填」，不应再反向推回数据库（避免回环） */
+  var suppressHook = 0;
+
+  function emitUsersChanged(list) {
+    if (suppressHook > 0) return;
+    for (var i = 0; i < usersChangedHandlers.length; i++) {
+      try { usersChangedHandlers[i](list); } catch (e) { console.warn('[store] users 变更钩子异常:', e); }
+    }
+  }
+
+  /** 静默写入用户表：只落本地，不触发写穿透 */
+  function writeUsersQuiet(list) {
+    suppressHook++;
+    try { write('users', list); } finally { suppressHook--; }
+  }
+
   function write(key, value) {
     cache[key] = value;
+    var ok = false;
     try {
       localStorage.setItem(P + key, JSON.stringify(value));
-      return true;
+      ok = true;
     } catch (e) {
       console.error('[store] 写入失败（可能超出配额）:', key, e);
-      return false;
     }
+    if (key === 'users') emitUsersChanged(value);
+    return ok;
   }
 
   function remove(key) {
@@ -124,6 +148,126 @@
       return users.all().filter(function (u) { return u.user_id === id; })[0] || null;
     },
 
+    /* ---------------- 数据库镜像（见 js/db-client.js） ----------------
+     * 定位：localStorage 是「同步缓存」，MySQL 是「持久化真源」。
+     * 页面仍然同步读本地表，本地表由数据库镜像保持最新。
+     *
+     * 口令哈希无法从数据库回填：数据库里存的是服务端 scrypt 派生值，
+     * 前端算法不同，不能复用。因此镜像时：
+     *   · 本地已有同名用户 → 只更新资料字段与角色，保留本地口令哈希（离线仍可登录）
+     *   · 本地没有该用户   → 若本次登录刚验证过明文口令，就补一份本地哈希；
+     *                        否则留空 —— 留空的用户在离线状态下无法登录，
+     *                        这是刻意的：拿不到口令就无法校验。
+     */
+
+    /** 把一条数据库用户记录合并进本地镜像 */
+    mirrorFromDb: function (dbUser, plainPassword) {
+      if (!dbUser || !dbUser.username) return null;
+      var list = users.all();
+      var idx = -1;
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].username === dbUser.username) { idx = i; break; }
+      }
+      var age = (dbUser.age === '' || dbUser.age === null || dbUser.age === undefined)
+        ? '' : String(dbUser.age);
+
+      if (idx < 0) {
+        var salt = plainPassword ? Crypto.randomSalt(16) : '';
+        list.push({
+          user_id: dbUser.user_id,
+          username: dbUser.username,
+          password_salt: salt,
+          password_hash: plainPassword ? Crypto.hashPassword(String(plainPassword), salt) : '',
+          avatar_url: dbUser.avatar_url || '',
+          role: dbUser.role || 'user',
+          phone: dbUser.phone || '',
+          age: age,
+          gender: dbUser.gender || '',
+          diabetesType: dbUser.diabetesType || '',
+          create_time: dbUser.create_time || new Date().toISOString()
+        });
+        idx = list.length - 1;
+      } else {
+        var t = list[idx];
+        t.user_id = dbUser.user_id;
+        t.role = dbUser.role || t.role;
+        t.avatar_url = dbUser.avatar_url || '';
+        t.phone = dbUser.phone || '';
+        t.age = age;
+        t.gender = dbUser.gender || '';
+        t.diabetesType = dbUser.diabetesType || '';
+        if (plainPassword) {
+          var s2 = Crypto.randomSalt(16);
+          t.password_salt = s2;
+          t.password_hash = Crypto.hashPassword(String(plainPassword), s2);
+        }
+      }
+      writeUsersQuiet(list);
+      return publicUser(list[idx]);
+    },
+
+    /**
+     * 用数据库的整份用户列表刷新本地镜像。
+     * 数据库是权威来源：同名用户的资料字段以数据库为准，本地口令哈希保留不变。
+     *
+     * @param {Array}  dbUsers 数据库返回的用户数组
+     * @param {Object} [opts]  { keepLocalHashed: true }
+     *        keepLocalHashed（默认 true）：保留「本地有口令哈希、数据库里没有」的账号。
+     *        这是为了不破坏离线演示——种子账号 admin/user 在断网时仍能登录。
+     *        传 false 则严格对齐数据库（本地多出来的账号会被清掉）。
+     */
+    replaceAllFromDb: function (dbUsers, opts) {
+      var keepLocalHashed = !opts || opts.keepLocalHashed !== false;
+
+      var local = users.all();
+      var localByName = Object.create(null);
+      local.forEach(function (u) { localByName[u.username] = u; });
+
+      var merged = [];
+      var mergedNames = Object.create(null);
+      (dbUsers || []).forEach(function (d) {
+        var prev = localByName[d.username];
+        var age = (d.age === '' || d.age === null || d.age === undefined) ? '' : String(d.age);
+        mergedNames[d.username] = true;
+        if (prev) {
+          prev.user_id = d.user_id;
+          prev.role = d.role || prev.role;
+          prev.avatar_url = d.avatar_url || '';
+          prev.phone = d.phone || '';
+          prev.age = age;
+          prev.gender = d.gender || '';
+          prev.diabetesType = d.diabetesType || '';
+          merged.push(prev);
+        } else {
+          merged.push({
+            user_id: d.user_id,
+            username: d.username,
+            password_salt: '',
+            password_hash: '',
+            avatar_url: d.avatar_url || '',
+            role: d.role || 'user',
+            phone: d.phone || '',
+            age: age,
+            gender: d.gender || '',
+            diabetesType: d.diabetesType || '',
+            create_time: d.create_time || new Date().toISOString()
+          });
+        }
+      });
+
+      // 本地有口令哈希、数据库里没有的账号：保留，保证离线演示可登录
+      local.forEach(function (u) {
+        if (mergedNames[u.username]) return;
+        if (!keepLocalHashed) return;
+        if (!u.password_hash) return;
+        mergedNames[u.username] = true;
+        merged.push(u);
+      });
+
+      writeUsersQuiet(merged);
+      return merged;
+    },
+
     /**
      * 校验口令。兼容历史明文数据：校验通过后立即升级为哈希并删除明文。
      * @returns {Object|null} 脱敏后的用户对象
@@ -181,16 +325,18 @@
       var list = users.all();
       if (users.findByUsername(data.username)) return { ok: false, msg: '用户名已存在' };
       var salt = Crypto.randomSalt(16);
+      var p = data.profile || {};
       var user = {
         user_id: uid(list, 'user_id'),
         username: data.username,
         password_salt: salt,
         password_hash: Crypto.hashPassword(String(data.password), salt),
-        avatar_url: '',
+        avatar_url: p.avatar_url || '',
         role: 'user',
-        phone: '',
-        age: '',
-        gender: '',
+        phone: p.phone || '',
+        age: p.age === undefined || p.age === null ? '' : String(p.age),
+        gender: p.gender || '',
+        diabetesType: p.diabetesType || '',
         create_time: new Date().toISOString()
       };
       list.push(user);
@@ -653,6 +799,20 @@
     chat: chat,
     prefs: prefs,
     stats: stats,
+
+    /**
+     * 订阅「用户表变更」事件（js/db-client.js 用它做 MySQL 写穿透）。
+     * 返回取消订阅的函数。
+     */
+    onUsersChanged: function (fn) {
+      if (typeof fn !== 'function') return function () {};
+      usersChangedHandlers.push(fn);
+      return function () {
+        var i = usersChangedHandlers.indexOf(fn);
+        if (i >= 0) usersChangedHandlers.splice(i, 1);
+      };
+    },
+
     _raw: { read: read, write: write, remove: remove, uid: uid, migrateUserKeys: migrateUserKeys }
   };
 })(window);
