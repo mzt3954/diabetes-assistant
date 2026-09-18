@@ -1,0 +1,66 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "① 演示 · 契约桩 + Chrome（推荐）",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://127.0.0.1:8080/index.html",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": false,
+      "preLaunchTask": "演示 · 启动本地 Dify 契约桩（推荐，最稳）",
+      "presentation": { "group": "演示", "order": 1 }
+    },
+    {
+      "name": "② 演示 · 离线引擎 + Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://127.0.0.1:8080/index.html",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": false,
+      "preLaunchTask": "演示 · 仅启动静态站点（离线引擎模式）",
+      "presentation": { "group": "演示", "order": 2 }
+    },
+    {
+      "name": "③ 演示 · 契约桩 + Edge",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://127.0.0.1:8080/index.html",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": false,
+      "preLaunchTask": "演示 · 启动本地 Dify 契约桩（推荐，最稳）",
+      "presentation": { "group": "演示", "order": 3 }
+    },
+    {
+      "name": "④ 调试 · 契约桩服务（Node）",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/tests/mock-dify-server.js",
+      "args": ["--port", "8080", "--serve", "."],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "NODE_ENV": "development",
+        "NO_PROXY": "127.0.0.1,localhost",
+        "no_proxy": "127.0.0.1,localhost"
+      },
+      "presentation": { "group": "调试", "order": 1 }
+    },
+    {
+      "name": "⑤ 调试 · 演示前体检（Node）",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/demo-check.js",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "NODE_ENV": "development",
+        "NO_PROXY": "127.0.0.1,localhost",
+        "no_proxy": "127.0.0.1,localhost"
+      },
+      "presentation": { "group": "调试", "order": 2 }
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "演示 · 启动本地 Dify 契约桩（推荐，最稳）",
+      "type": "shell",
+      "command": "node",
+      "args": ["tests/mock-dify-server.js", "--port", "8080", "--serve", "."],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "NODE_ENV": "development",
+          "NO_PROXY": "127.0.0.1,localhost",
+          "no_proxy": "127.0.0.1,localhost"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": [{ "regexp": "^$" }],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "(Dify 契约桩|启动失败)",
+          "endsPattern": "(按 Ctrl\\+C 停止|启动失败|EADDRINUSE)"
+        }
+      },
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "detail": "同一端口 8080 同时托管静态站点与 /v1 API。无需真实 Dify、无需联网，可演示完整的在线模式（HTTP + SSE）。若 8080 已被上次的桩占用，本任务会提示 EADDRINUSE，此时页面仍可用，直接继续即可。"
+    },
+    {
+      "label": "演示 · 仅启动静态站点（离线引擎模式）",
+      "type": "shell",
+      "command": "npx",
+      "args": ["--no-install", "http-server", "-p", "8080", "-a", "127.0.0.1", "-c-1", "."],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "NODE_ENV": "development",
+          "NO_PROXY": "127.0.0.1,localhost",
+          "no_proxy": "127.0.0.1,localhost"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": [{ "regexp": "^$" }],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "(Starting up http-server|EADDRINUSE)",
+          "endsPattern": "(Available on|EADDRINUSE)"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "detail": "只起静态服务器。所有 AI 能力由 js/mock-engine.js 本地规则引擎提供，完全离线，绝不会因网络问题中断演示。"
+    },
+    {
+      "label": "演示 · 停止占用 8080 的服务",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "$p = Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique; if ($p) { $p | ForEach-Object { Stop-Process -Id $_ -Force; Write-Output ('[stopped] PID ' + $_) } } else { Write-Output '[ok] port 8080 is free' }"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "detail": "仅结束监听 8080 的进程（不会影响其他 Node 进程）。用于 F5 报 EADDRINUSE、或演示前想从干净状态开始时。"
+    },
+    {
+      "label": "演示 · 切换到本地桩模式",
+      "type": "shell",
+      "command": "node",
+      "args": ["tools/demo-mode.js", "local-mock"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "detail": "把 js/config.local.js 指向 http://127.0.0.1:8080/v1 并填入桩服务的 8 个 Key。"
+    },
+    {
+      "label": "演示 · 切换到离线模式",
+      "type": "shell",
+      "command": "node",
+      "args": ["tools/demo-mode.js", "offline"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "detail": "强制 USE_MOCK=true，全部功能走本地引擎，用于网络完全不可用时的兜底。"
+    },
+    {
+      "label": "演示 · 切换到课程沙箱模式",
+      "type": "shell",
+      "command": "node",
+      "args": ["tools/demo-mode.js", "sandbox"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "detail": "恢复为课程云沙箱地址与真实 API Key（需沙箱可达）。"
+    },
+    {
+      "label": "演示 · 查看当前模式",
+      "type": "shell",
+      "command": "node",
+      "args": ["tools/demo-mode.js", "status"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "detail": "读取 js/config.local.js，报告当前处于 local-mock / offline / sandbox 中的哪一种。"
+    },
+    {
+      "label": "验证 · 演示链路体检（推荐先跑）",
+      "type": "shell",
+      "command": "node",
+      "args": ["tools/demo-check.js"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "NODE_ENV": "development",
+          "NO_PROXY": "127.0.0.1,localhost",
+          "no_proxy": "127.0.0.1,localhost"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "detail": "一条命令回答「现在能不能演示」：配置模式、站点 HTTP 状态、API 可达性、8 个应用 Key 配置数、结论与下一步建议。"
+    },
+    {
+      "label": "验证 · 全量回归（273 条）",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "verify"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "NODE_ENV": "test",
+          "NO_PROXY": "127.0.0.1,localhost",
+          "no_proxy": "127.0.0.1,localhost"
+        }
+      },
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "detail": "单元 + 冒烟 + 契约 + 传输 + 联调 + Playwright 端到端，共 273 条。"
+    },
+    {
+      "label": "验证 · 端到端（Playwright，需站点已启动）",
+      "type": "shell",
+      "command": "npx",
+      "args": ["playwright", "test"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "NODE_ENV": "test",
+          "BASE_URL": "http://127.0.0.1:8080",
+          "EXPECT_SECURITY_HEADERS": "1",
+          "NO_PROXY": "127.0.0.1,localhost",
+          "no_proxy": "127.0.0.1,localhost"
+        }
+      },
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "detail": "真实浏览器全流程。BASE_URL 与 EXPECT_SECURITY_HEADERS 通过环境变量注入，无需改代码。"
+    }
+  ]
+}

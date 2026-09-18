@@ -32,7 +32,12 @@ tools/.console-token.json
 tools/.dify-keys.sh
 
 # ---------- 编辑器 / 系统 ----------
-.vscode/
+# .vscode 只交付「共享的调试配置」（F5 一键启动），随仓库入库；
+# 个人本地设置（settings.json 等）仍然忽略，避免污染他人环境。
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
 .idea/
 *.swp
 .DS_Store
