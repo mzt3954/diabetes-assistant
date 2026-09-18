@@ -2,7 +2,19 @@
 chcp 65001 >nul 2>&1
 title Dify Demo Launcher
 
-rem 切换到脚本所在目录（避免硬编码含中文的绝对路径，规避编码问题）
+rem ====================================================================
+rem  IMPORTANT: keep this file PURE ASCII.
+rem  cmd.exe reads .cmd/.bat using the OEM code page (936 on zh-CN
+rem  Windows). If this file contained non-ASCII bytes saved as UTF-8,
+rem  they would be mis-decoded as GBK, which shifts the parser and
+rem  breaks lines (e.g. "if errorlevel" / "node ..." get corrupted).
+rem  All user-facing text is therefore kept in English on purpose.
+rem  The Chinese output produced by the Node.js child process still
+rem  renders correctly because of the "chcp 65001" above.
+rem ====================================================================
+
+rem Switch to this script's own folder, so no hard-coded Chinese
+rem absolute path is needed (avoids encoding problems entirely).
 cd /d "%~dp0"
 
 echo.
@@ -20,7 +32,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-rem 一键启动：优先真实本地 Dify，失败自动降级到契约桩
+rem One-click start: real local Dify first, auto fallback to contract stub.
 node tools\dify-local-start.js %*
 
 echo.
