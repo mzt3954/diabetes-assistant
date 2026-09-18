@@ -135,30 +135,6 @@
   <script src="js/api.js" defer></script>
   <script src="js/charts.js" defer></script>
   <script src="js/pages/personal.js" defer></script>
-  <script>
-    // 设计迭代 2：个人中心进度环形图
-    document.addEventListener('DOMContentLoaded', function () {
-      if (!window.DPA || !DPA.store || !DPA.charts) return;
-      var store = DPA.store;
-      var total = store.plans.count() || 1;
-      var doneTotal = store.punch.count();
-
-      var weekCompleted = 0;
-      store.punch.recentDays(7).forEach(function (d) {
-        d.items.forEach(function (p) { if (p.completion_status === '已完成') weekCompleted++; });
-      });
-
-      DPA.charts.progressRing('#personalRingOverall', Math.min(100, (doneTotal / total) * 100), {
-        title: '累计完成度',
-        label: doneTotal + '/' + total,
-        color: doneTotal >= total ? '--success' : '--primary'
-      });
-      DPA.charts.progressRing('#personalRingWeek', Math.min(100, (weekCompleted / (total * 7)) * 100), {
-        title: '本周完成度',
-        label: weekCompleted + ' 项',
-        color: weekCompleted >= total * 5 ? '--success' : '--primary'
-      });
-    });
-  </script>
+  <script src="js/pages/personal-init.js" defer></script>
 </body>
 </html>

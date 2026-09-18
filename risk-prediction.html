@@ -192,12 +192,6 @@
   <script src="js/mock-engine.js" defer></script>
   <script src="js/api.js" defer></script>
   <script src="js/pages/risk.js" defer></script>
-  <script>
-    // 设计迭代 2：历史评估错误态重试
-    document.addEventListener('DOMContentLoaded', function () {
-      var retry = document.getElementById('retryHistory');
-      if (retry) retry.addEventListener('click', function () { location.reload(); });
-    });
-  </script>
+  <script src="js/pages/risk-init.js" defer></script>
 </body>
 </html>

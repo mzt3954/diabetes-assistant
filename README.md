@@ -103,11 +103,13 @@ ai/
 │   ├── Dify应用配置指南.md
 │   └── 部署说明.md
 ├── tests/
-│   ├── logic-test.js          # 核心逻辑单元测试（72 项）
+│   ├── logic-test.js          # 核心逻辑单元测试（85 项）
 │   ├── smoke-test.js          # 13 页面 DOM 冒烟测试（jsdom）
+│   ├── dsl-test.js            # 8 个 Dify 应用 DSL 契约测试（91 项）
+│   ├── transport-test.js      # 传输层测试（代理/鉴权/失败分类，40 项）
 │   ├── integration-test.js    # Dify 真实联调测试（HTTP + SSE，24 项）
 │   ├── mock-dify-server.js    # Dify 契约桩服务（无 Key 也能联调）
-│   └── e2e.spec.js            # Playwright 端到端测试（17 项）
+│   └── e2e.spec.js            # Playwright 端到端测试（20 项）
 ├── .github/workflows/ci.yml   # CI：lint → 单测 → 冒烟 → 联调 → E2E
 ├── eslint.config.js           # ESLint 9 扁平配置
 ├── nginx.conf                 # Nginx 部署配置（HTTPS + 反代 + CSP）
@@ -158,7 +160,7 @@ npm run lint           # ESLint
 | DSL 契约测试 | `node tests/dsl-test.js` | 8 个应用 DSL 结构、mode、值引用、变量类型与前端契约一致性 | **91 / 91** |
 | 传输层测试 | `node tests/transport-test.js` | 代理绕过、Set-Cookie 解析、失败分类、应用名映射、fetchShim 语义 | **40 / 40** |
 | 联调测试 | `node tests/integration-test.js` | 真实 HTTP + SSE：8 个应用全链路、鉴权、重试策略、契约降级、SSE 异常与空闲超时 | **24 / 24** |
-| E2E | `npx playwright test` | 主链路 + 权限 + XSS + 开放重定向 + 口令不落明文 | **17 / 17** |
+| E2E | `npx playwright test` | 主链路 + 权限 + XSS + 开放重定向 + 口令不落明文 + PC/移动端适配 | **20 / 20** |
 
 ### 无真实 Dify 也能联调
 
@@ -274,7 +276,7 @@ README.md / index.json                  知识库说明与索引
 ## 一键校验
 
 ```bash
-# 代码侧：单元 + 冒烟 + 契约 + 传输 + 联调 + 端到端（共 270 条）
+# 代码侧：单元 + 冒烟 + 契约 + 传输 + 联调 + 端到端（共 273 条）
 npm run verify
 ```
 

@@ -148,27 +148,6 @@
   <script src="js/mock-engine.js" defer></script>
   <script src="js/api.js" defer></script>
   <script src="js/pages/admin.js" defer></script>
-  <script>
-    // 设计迭代 2：管理后台数据表错误态保护
-    document.addEventListener('DOMContentLoaded', function () {
-      var retry = document.getElementById('retryTable');
-      if (retry) retry.addEventListener('click', function () { location.reload(); });
-
-      var list = document.getElementById('tableArea');
-      var error = document.getElementById('tableError');
-      if (!list || !error) return;
-
-      var observer = new MutationObserver(function () {
-        if (list.querySelectorAll('.list-item').length > 0) error.classList.remove('show');
-      });
-      observer.observe(list, { childList: true });
-
-      setTimeout(function () {
-        if (list.querySelectorAll('.list-item').length === 0 && !list.querySelector('.empty-state')) {
-          error.classList.add('show');
-        }
-      }, 3000);
-    });
-  </script>
+  <script src="js/pages/admin-init.js" defer></script>
 </body>
 </html>

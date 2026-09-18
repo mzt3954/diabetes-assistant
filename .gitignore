@@ -51,3 +51,4 @@ tools/.probe-*.json
 
 # 本地真实配置（Dify 地址与 API Key）：绝不入库
 js/config.local.js
+js/config.local.*.js

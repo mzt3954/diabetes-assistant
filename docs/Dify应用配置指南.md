@@ -296,7 +296,7 @@ npm run test:integration
 DSL 变更后重新生成：
 
 ```bash
-cd "C:\Users\mazit\Desktop\2026秋\实训2\ai"
+cd "C:\Users\mazit\Desktop\2026秋\实训2\01-源代码\diabetes-assistant"
 python ../shixun2_build/render_workflows.py
 ```
 

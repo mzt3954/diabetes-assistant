@@ -119,27 +119,6 @@
   <script src="js/auth.js" defer></script>
   <script src="js/api.js" defer></script>
   <script src="js/pages/help.js" defer></script>
-  <script>
-    // 设计迭代 2：帮助中心 FAQ 错误态保护
-    document.addEventListener('DOMContentLoaded', function () {
-      var retry = document.getElementById('retryFaq');
-      if (retry) retry.addEventListener('click', function () { location.reload(); });
-
-      var list = document.getElementById('faqList');
-      var error = document.getElementById('faqError');
-      if (!list || !error) return;
-
-      var observer = new MutationObserver(function () {
-        if (list.querySelectorAll('.faq-item').length > 0) error.classList.remove('show');
-      });
-      observer.observe(list, { childList: true });
-
-      setTimeout(function () {
-        if (list.querySelectorAll('.faq-item').length === 0 && !list.querySelector('.empty-state')) {
-          error.classList.add('show');
-        }
-      }, 3000);
-    });
-  </script>
+  <script src="js/pages/help-init.js" defer></script>
 </body>
 </html>
