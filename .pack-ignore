@@ -1,0 +1,36 @@
+# 交付打包排除清单 (.pack-ignore)
+# ============================================================
+# 用途：打包评审「源代码 zip 包」时，据此剔除无需交付的运行/过程产物，
+#       以缩小体积、避免混入 API Key 与调试截图。
+# 用法：被打包脚本读取，或打包时人工按此清单勾选排除。
+# 格式：每行一个相对路径或 glob，命中即排除（相对 01-源代码/diabetes-assistant）。
+#
+# --- 依赖：可 npm install 恢复，无需打入 source 包 ---
+node_modules/
+
+# --- 测试 / 报告过程产物 ---
+test-results/
+playwright-report/
+blob-report/
+tests/report/
+*.trace.zip
+screencast/
+
+# --- 本地真实配置（含 Dify API Key，绝不打包/入库） ---
+js/config.local*.js
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# --- 日志 / 临时 / 系统 ---
+*.log
+npm-debug.log*
+*.tmp
+*.bak
+*.orig
+.DS_Store
+Thumbs.db
+desktop.ini

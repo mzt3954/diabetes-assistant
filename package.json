@@ -10,6 +10,7 @@
     "test": "tests"
   },
   "scripts": {
+    "clean:test": "node -e \"console.log('Cleaning test artifacts...');const fs=require('fs');['test-results','playwright-report','tests/report'].forEach(p=>fs.rmSync(p,{recursive:true,force:true}));\"",
     "test": "node tests/logic-test.js && node tests/smoke-test.js && node tests/dsl-test.js && node tests/transport-test.js",
     "test:logic": "node tests/logic-test.js",
     "test:smoke": "node tests/smoke-test.js",
@@ -19,7 +20,7 @@
     "test:real": "node tests/real-dify-check.js",
     "test:real:probe": "node tests/real-dify-check.js --probe",
     "test:all": "npm run test && npm run test:integration",
-    "test:e2e": "playwright test",
+    "test:e2e": "npm run clean:test && playwright test",
     "dev": "node tests/mock-dify-server.js --serve .",
     "mock:dify": "node tests/mock-dify-server.js",
     "server": "node server/index.js",
@@ -36,7 +37,7 @@
     "dify:import": "node tools/dify-console.js import dify-apps",
     "dify:keys": "node tools/dify-console.js keys --create",
     "dify:wire": "node tools/dify-console.js write-config",
-    "verify": "npm run test:all && npx playwright test"
+    "verify": "npm run clean:test && npm run test:all && npx playwright test"
   },
   "keywords": [
     "diabetes",
