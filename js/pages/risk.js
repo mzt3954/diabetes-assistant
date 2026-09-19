@@ -1,7 +1,14 @@
 /**
  * pages/risk.js — 个人信息与糖尿病风险预测
- * 流程：填写信息 → 校验 → 调用 WF-2 / 本地 CDRS 引擎 → 结果四段式展示（评分·分档·归因·建议）
+ * ==========================================
+ * 功能：填写健康信息 → 校验 → 提交风险预测 → 四段式结果展示；含性别联动、
+ *      BMI 实时计算、历史记录与上次填写回填。
+ * 流程：填写信息 → 校验 → 调用 WF-2 / 本地 CDRS 引擎 → 结果四段式展示
+ *     （评分·分档·归因·建议）。
+ * 交互模块：DPA.ui(校验/渲染/主题变量/提示)、DPA.store.risk(保存/历史)、
+ *          DPA.api.predictRisk(云端预测，失败降级本地)。
  */
+// IIFE 隔离作用域；未登录先跳登录页。
 (function () {
   'use strict';
 
@@ -21,6 +28,7 @@
   var $ = function (id) { return document.getElementById(id); };
 
   /* ---------- 性别联动：男性隐藏妊娠选项 ---------- */
+  // 性别切换：女性显示妊娠项，男性隐藏并清空妊娠选择
   $('sex').addEventListener('change', function () {
     $('pregnancyGroup').style.display = this.value === '女' ? '' : 'none';
     if (this.value !== '女') $('isPregnancy').value = '无';
@@ -28,6 +36,10 @@
   $('pregnancyGroup').style.display = 'none';
 
   /* ---------- BMI 实时计算 ---------- */
+  /**
+   * 根据身高体重实时计算 BMI 并填充到显示框，附带正常/超重/肥胖分档。
+   * @returns {void} 无返回值
+   */
   function calcBmi() {
     var h = Number($('height').value);
     var w = Number($('weight').value);
@@ -42,6 +54,10 @@
   $('weight').addEventListener('input', calcBmi);
 
   /* ---------- 校验规则 ---------- */
+  /**
+   * 校验表单各字段是否合法（年龄/性别/身高/体重/腰围/收缩压等范围校验）。
+   * @returns {boolean} 全部通过返回 true，否则为 false
+   */
   function validateForm() {
     return ui.validate({
       age: [ui.validators.required, ui.validators.range(1, 120, '年龄')],
@@ -63,6 +79,12 @@
   };
   var TRACK_COLOR = ui.themeVar('--chart-track', '#EEF2F7');
 
+  /**
+   * 生成环形仪表盘（gauge）SVG HTML，按百分比展示风险概率。
+   * @param {number} percent 风险概率百分比
+   * @param {string} color 主题色
+   * @returns {string} 仪表盘 HTML 字符串
+   */
   function gauge(percent, color) {
     var r = 62, c = 2 * Math.PI * r;
     var offset = c * (1 - percent / 100);
@@ -79,6 +101,12 @@
     '</div>';
   }
 
+  /**
+   * 渲染风险预测结果：仪表盘、等级、评分/BMI 信息、风险因子、个性化建议与免责声明。
+   * @param {Object} res 预测结果对象（level/probability/factors/advice 等）
+   * @param {Object} input 提交时收集的用户输入
+   * @returns {void} 无返回值
+   */
   function renderResult(res, input) {
     var level = res.level || '低风险';
     var cls = LEVEL_CLASS[level] || 'low';
@@ -125,6 +153,10 @@
   }
 
   /* ---------- 提交 ---------- */
+  /**
+   * 收集表单各字段为一个用户输入对象。
+   * @returns {Object} 包含年龄/性别/身高/体重/腰围/血压/家族史/妊娠/疾病等字段
+   */
   function collect() {
     return {
       age: Number($('age').value),
@@ -139,6 +171,7 @@
     };
   }
 
+  // 表单提交：校验 → 加载态 → 调用 api.predictRisk → 保存结果并渲染结果/历史
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (!validateForm()) {
@@ -172,6 +205,7 @@
   });
 
   /* ---------- 重置 ---------- */
+  // 重置按钮：清空表单、隐藏妊娠项与校验错误样式
   document.getElementById('resetBtn').addEventListener('click', function () {
     form.reset();
     $('pregnancyGroup').style.display = 'none';
@@ -181,6 +215,10 @@
   });
 
   /* ---------- 历史记录 ---------- */
+  /**
+   * 渲染历史评估记录列表（新到旧取前 6 条，含日期、年龄、BMI 与等级标签）。
+   * @returns {void} 无返回值
+   */
   function renderHistory() {
     var list = store.risk.history().slice().reverse();
     var host = $('historyList');
@@ -199,6 +237,7 @@
   }
 
   /* ---------- 回填上次填写 ---------- */
+  // 首次进入回填上次评估数据，并重新计算 BMI
   (function prefill() {
     var last = store.risk.latest();
     if (!last) return;
@@ -211,5 +250,6 @@
     calcBmi();
   })();
 
+  // 初始渲染历史记录列表
   renderHistory();
 })();

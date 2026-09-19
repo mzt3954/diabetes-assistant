@@ -100,6 +100,7 @@
     return H;
   }
 
+  /** 8 个 32 位字拼接成 64 位十六进制字符串（SHA-256 摘要的最终表示） */
   function wordsToHex(H) {
     var out = '';
     for (var i = 0; i < H.length; i++) {
@@ -115,6 +116,7 @@
 
   var ITERATIONS = 1000;   // 迭代拉伸轮数
 
+  /** 字节数组转十六进制字符串（用于随机盐的表示） */
   function toHex(bytes) {
     var out = '';
     for (var i = 0; i < bytes.length; i++) out += ('0' + (bytes[i] & 255).toString(16)).slice(-2);

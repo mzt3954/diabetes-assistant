@@ -26,7 +26,9 @@ const args = process.argv.slice(2);
 const onlySchema = args.includes('--schema');
 const onlyCheck = args.includes('--check');
 
+/** 输出的别名函数，便于统一日志出口 */
 function log(...a) { console.log(...a); }
+/** 打印一行分隔线，用于终端输出排版 */
 function line() { log('-'.repeat(74)); }
 
 /** 建一条「不带 database」的连接：库还不存在时也能连上 */
@@ -110,6 +112,7 @@ async function showStatus() {
   }
 }
 
+/** 脚本入口（IIFE 立即执行）：按命令行参数分发 --check / --schema / 完整初始化三种模式 */
 (async function main() {
   line();
   log('糖尿病预治智能助手 — 数据库初始化');

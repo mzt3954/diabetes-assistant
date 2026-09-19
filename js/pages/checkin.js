@@ -1,7 +1,13 @@
 /**
- * pages/checkin.js — 打卡记录与打卡分析（对应课程任务 8-1 ~ 8-3）
- * 分析流程：本地/云端计算三维指标（完成率·连续天数·类型均衡度）→ 评级 → 建议
+ * pages/checkin.js — 打卡记录与打卡分析
+ * ======================================
+ * 功能：展示近 7 日打卡网格、智能分析结果与打卡明细列表。
+ * 分析流程：本地/云端计算三维指标（完成率·连续天数·类型均衡度）→ 评级 → 建议。
+ * 交互模块：DPA.ui(渲染/加载态/提示)、DPA.store(方案/打卡数据)、
+ *          DPA.api.analyzeCheckin(云端分析)，降级走 DPA.mock.analyzeCheckin。
+ * 关卡：对应课程任务 8-1 ~ 8-3。
  */
+// IIFE 隔离作用域；未登录先跳登录页。
 (function () {
   'use strict';
 
@@ -20,6 +26,11 @@
   var TODAY = store.dateKey(new Date());
 
   /* ---------- 近 7 日网格 ---------- */
+  /**
+   * 渲染近 7 天的打卡完成度网格（含「今天」标识与周几/日期标签）。
+   * @returns {void} 无返回值
+   * 用途：遍历最近 7 天打卡，按完成数量与方案总数对比得出 full/some/空 三态圆环。
+   */
   function renderWeek() {
     var recent = store.punch.recentDays(DAYS);
     var total = store.plans.all().length || 1;
@@ -38,13 +49,23 @@
   }
 
   /* ---------- 智能分析 ---------- */
-  /** 进度条宽度做 0–100 夹取，防止异常数据把条撑出容器 */
+  /**
+   * 将进度值夹取到 0–100，防止异常数据把进度条撑出容器。
+   * @param {*} v 待夹取的进度值
+   * @returns {number} 夹取后的整数值
+   */
   function barWidth(v) {
     var n = Number(v);
     if (!isFinite(n)) return 0;
     return Math.max(0, Math.min(100, Math.round(n)));
   }
 
+  /**
+   * 渲染智能分析结果卡片（评级、三维指标、饮食/运动进度、改进建议）。
+   * @param {Object} res 分析结果对象（含 evaluation/rate/streak/balance/suggestions 等）
+   * @returns {void} 无返回值
+   * 用途：无方案时展示引导空状态，否则渲染评级标签、指标块与进度条、建议列表。
+   */
   function renderAnalysis(res) {
     var area = document.getElementById('analysisArea');
     if (!store.plans.all().length) {
@@ -84,10 +105,16 @@
       '</div>';
   }
 
+  /** 生成单个指标块 HTML（数值 + 标签） */
   function metric(v, l) {
     return '<div class="analysis-metric"><div class="analysis-metric-value">' + ui.escapeHtml(String(v)) + '</div><div class="analysis-metric-label">' + ui.escapeHtml(String(l)) + '</div></div>';
   }
 
+  /**
+   * 发起打卡分析：显示加载态，调用云端接口，失败时降级到本地 mock。
+   * @returns {Promise} 解析为分析结果对象
+   * 用途：以近 7 天为窗口（锚定「今天」日期口径）请求分析，成功后渲染结果。
+   */
   function analyze() {
     var area = document.getElementById('analysisArea');
     area.innerHTML = ui.loading('正在分析近 7 天打卡数据...');
@@ -101,6 +128,10 @@
   }
 
   /* ---------- 打卡明细 ---------- */
+  /**
+   * 渲染打卡明细列表（新到旧取前 30 条，含类型图标与完成状态标签）。
+   * @returns {void} 无返回值
+   */
   function renderDetail() {
     var list = store.punch.all().slice().reverse();
     var host = document.getElementById('detailList');
@@ -124,12 +155,15 @@
   }
 
   /* ---------- 事件 ---------- */
+  // 生成方案跳转按钮
   document.getElementById('gotoPlan').addEventListener('click', function () { location.href = 'life-plan.html'; });
+  // 手动刷新分析：重新拉取并提示更新完成
   document.getElementById('refreshAnalysis').addEventListener('click', function () {
     analyze().then(function () { ui.toast('分析已更新'); });
   });
 
   /* ---------- 初始化 ---------- */
+  // 页面初始化：渲染周网格、明细列表并触发首次分析
   renderWeek();
   renderDetail();
   analyze();

@@ -34,6 +34,7 @@ function clientIp(req) {
   return ip ? ip.slice(0, 45) : null;
 }
 
+/** 取客户端 User-Agent，截断到 255 字符，无则返回 null */
 function userAgent(req) {
   const ua = String(req.headers['user-agent'] || '');
   return ua ? ua.slice(0, 255) : null;
@@ -51,12 +52,19 @@ async function writeLoginLog(req, userId, username, success) {
   }
 }
 
+/** 统一错误响应：按 status（默认 400）返回 { ok:false, error:{code,message} } */
 function badRequest(res, code, message, status) {
   return res.status(status || 400).json({ ok: false, error: { code, message } });
 }
 
 /* ==================== 注册 ==================== */
 
+/**
+ * POST /api/auth/register —— 用户注册
+ * 接收 body：username、password（必需），phone/age/gender/diabetesType/avatar_url（可选）
+ * 处理：逐一校验用户名、口令及可选资料 → 查重（用户名唯一）→ scrypt 哈希 → 入库
+ * 返回：201 及脱敏后的新用户；错误以 code 区分（INVALID_* / USERNAME_TAKEN 409）
+ */
 router.post('/register', async (req, res, next) => {
   try {
     const body = req.body || {};
@@ -101,6 +109,13 @@ router.post('/register', async (req, res, next) => {
 
 /* ==================== 登录 ==================== */
 
+/**
+ * POST /api/auth/login —— 用户登录
+ * 接收 body：username、password（均为必需）
+ * 处理：查用户 → 校验口令与 status 是否启用；用户不存在时也做一次等价哈希运算以防
+ *       通过响应时间枚举用户名 → 无论成败均写登录日志
+ * 返回：成功为脱敏用户对象；失败 MISSING_CREDENTIALS / INVALID_CREDENTIALS(401)
+ */
 router.post('/login', async (req, res, next) => {
   try {
     const body = req.body || {};

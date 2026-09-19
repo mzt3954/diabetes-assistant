@@ -21,6 +21,7 @@ const config = require('./config');
 const db = require('./db');
 const { createApp, PROJECT_ROOT } = require('./app');
 
+/** 打印一行分隔线，用于终端输出排版 */
 function line() { console.log('-'.repeat(74)); }
 
 /** 需要 AUTO_INIT_DB 时执行建库建表 */
@@ -36,6 +37,10 @@ async function autoInitIfNeeded() {
   }
 }
 
+/**
+ * 服务启动主流程：打印配置 → 自动初始化数据库 → 探活 → 创建 app 并监听端口 → 注册优雅退出。
+ * 无参数、无返回值；全程异步，失败时向上抛错由底部 catch 处理。
+ */
 async function main() {
   line();
   console.log('糖尿病预治智能助手 — 后端服务（Express + MySQL）');
@@ -95,6 +100,11 @@ async function main() {
 
   /* ---- 优雅退出 ---- */
   let closing = false;
+  /**
+   * 优雅关闭服务：先停止接收新连接，再关闭连接池，最后退出进程。
+   * @param {string} signal 触发退出的信号名（如 SIGINT / SIGTERM）。
+   * 由 process.on 回调调用；内部缓存 closing 标志防止重复关闭。
+   */
   const shutdown = async (signal) => {
     if (closing) return;
     closing = true;

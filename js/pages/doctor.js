@@ -1,7 +1,13 @@
 /**
  * pages/doctor.js — 医师咨询
- * 接入 Dify Chatflow（CHAT-1），未配置时走本地医师知识库，均支持流式输出。
+ * ============================
+ * 功能：先选出医师再进入聊天；支持 SSE 流式回复、多轮上下文、快捷问题、
+ *      历史持久化与清空，列表/聊天视图间切换。
+ * 交互模块：DPA.ui(渲染/提示)、DPA.store.doctors(医师数据)、
+ *          DPA.store.chat(会话历史与ID)、DPA.api.doctorChat(流式接口)。
+ * 说明：接入 Dify Chatflow（CHAT-1），未配置时走本地医师知识库，均支持流式输出。
  */
+// IIFE 隔离作用域；未登录先跳登录页。URL 带 doctor 参数可直达指定医师。
 (function () {
   'use strict';
 
@@ -28,6 +34,10 @@
   var controller = null;
 
   /* ---------- 医生列表 ---------- */
+  /**
+   * 渲染医师卡片列表，并为每张卡片绑定进入聊天的点击事件。
+   * @returns {void} 无返回值
+   */
   function renderDoctors() {
     var list = store.doctors.all();
     var host = document.getElementById('doctorList');
@@ -50,6 +60,13 @@
   }
 
   /* ---------- 消息渲染 ---------- */
+  /**
+   * 生成单条聊天消息气泡的 HTML。
+   * @param {string} role 角色 'user'/'bot'
+   * @param {string} content 消息内容（支持 Markdown）
+   * @param {string} [time] 可选时间戳
+   * @returns {string} 消息 HTML 字符串
+   */
   function msgHtml(role, content, time) {
     var isUser = role === 'user';
     return '<div class="chat-msg ' + (isUser ? 'user' : 'bot') + '">' +
@@ -58,11 +75,16 @@
       (time ? '<div class="chat-time">' + ui.formatTime(time) + '</div>' : '') + '</div></div>';
   }
 
+  /** 追加一条消息到消息区并滚动到底部 */
   function appendMessage(role, content, time) {
     messagesEl.insertAdjacentHTML('beforeend', msgHtml(role, content, time));
     ui.scrollToBottom(messagesEl);
   }
 
+  /**
+   * 渲染当前医师的聊天历史；无记录时展示医师欢迎语。
+   * @returns {void} 无返回值
+   */
   function renderHistory() {
     var history = store.chat.all(APP_ID);
     if (!history.length) {
@@ -75,6 +97,11 @@
   }
 
   /* ---------- 打开 / 关闭聊天 ---------- */
+  /**
+   * 打开指定医师的聊天视图：填充头部信息、切换视图并渲染历史与快捷问题。
+   * @param {number} id 医师的 info_id
+   * @returns {void} 无返回值
+   */
   function openChat(id) {
     currentDoctor = store.doctors.get(id);
     if (!currentDoctor) return;
@@ -92,6 +119,7 @@
     renderQuick();
   }
 
+  /** 关闭聊天并退回医师列表；若正在流式输出则先中止 */
   function closeChat() {
     if (controller) { controller.abort(); controller = null; }
     streaming = false;
@@ -101,6 +129,7 @@
     document.getElementById('dpaBottomNav').classList.remove('hidden');
   }
 
+  /** 渲染快捷问题按钮，点击时直接发送 */
   function renderQuick() {
     var host = document.getElementById('chatQuick');
     host.innerHTML = QUICK_QUESTIONS.map(function (q) {
@@ -112,11 +141,19 @@
   }
 
   /* ---------- 发送消息（流式） ---------- */
+  /** 启停发送状态：禁用/启用发送按钮与输入框 */
   function setSending(on) {
     sendBtn.disabled = on;
     inputEl.disabled = on;
   }
 
+  /**
+   * 发送一句话给当前医师，并开启 SSE 流式接收回复。
+   * @param {string} [text] 可选文本；缺省读取输入框内容
+   * @returns {void} 无返回值
+   * 用途：追加用户气泡并持久化 → 插入打字占位 → 调用 api.doctorChat，
+   *       onDelta 增量渲染、onDone 保存完整回复，出错时保留已输出内容。
+   */
   function send(text) {
     text = (text || inputEl.value).trim();
     if (!text || streaming) return;
@@ -168,6 +205,7 @@
       finish();
     });
 
+    /** 收尾：结束流式状态、清空控制器并恢复输入 */
     function finish() {
       streaming = false;
       controller = null;
@@ -177,8 +215,10 @@
   }
 
   /* ---------- 事件绑定 ---------- */
+  // 返回医师列表按钮
   document.getElementById('backToList').addEventListener('click', closeChat);
 
+  // 清空会话：确认后清空历史与会话ID并重新渲染
   document.getElementById('clearChat').addEventListener('click', function () {
     ui.confirm({ title: '清空会话', message: '确定要清空与当前医师的聊天记录吗？', danger: true }).then(function (ok) {
       if (!ok) return;
@@ -189,6 +229,7 @@
     });
   });
 
+  // 发送按钮点击 / 回车发送 / 输入框自适应高度
   sendBtn.addEventListener('click', function () { send(); });
 
   inputEl.addEventListener('keydown', function (e) {
@@ -204,6 +245,7 @@
   });
 
   /* ---------- 初始化 ---------- */
+  // 渲染医师列表；URL 带 doctor 参数则直达该医师聊天
   renderDoctors();
   var preId = Number(ui.query('doctor'));
   if (preId) openChat(preId);

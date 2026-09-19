@@ -17,17 +17,20 @@
 
   /* ==================== 风险预测 ==================== */
 
+  /** 年龄评分（CDRS）：<40 → 0，每升一个年龄段 +2（封顶 6） */
   function scoreAge(age) {
     if (age < 40) return 0;
     if (age < 50) return 2;
     if (age < 60) return 4;
     return 6;
   }
+  /** BMI 评分：<24 → 0，<28 → 3，>=28 → 5 */
   function scoreBMI(bmi) {
     if (bmi < 24) return 0;
     if (bmi < 28) return 3;
     return 5;
   }
+  /** 腰围评分：女性 >=85 / 男性 >=90 记 3 分 */
   function scoreWaist(waist, sex) {
     if (!waist) return 0;
     var limit = (sex === '女') ? 85 : 90;
@@ -45,14 +48,18 @@
     return AFFIRMATIVE.indexOf(String(v).trim().toLowerCase()) >= 0;
   }
 
+  /** 家族史评分：有 → 5 分 */
   function scoreFamily(v) {
     return isAffirmative(v) ? 5 : 0;
   }
+  /** 收缩压评分：>=130 记 3 分 */
   function scorePressure(sp) {
     if (!sp) return 0;
     return Number(sp) >= 130 ? 3 : 0;
   }
+  /** 性别评分：男性 +1 分 */
   function scoreSex(sex) { return sex === '男' ? 1 : 0; }
+  /** 妊娠史评分：女性且为妊娠型 → 4 分 */
   function scorePregnancy(v, sex) {
     if (sex !== '女') return 0;
     return isAffirmative(v) ? 4 : 0;
@@ -72,6 +79,7 @@
     return { factors: names, disease: disease };
   }
 
+  /** 按风险等级生成个性化建议列表（低/中/高风险分支） */
   function adviceByLevel(level, factors) {
     var base = [
       '保持规律作息，保证每晚 7–8 小时高质量睡眠',
@@ -161,6 +169,13 @@
     return isAffirmative(v) || String(v == null ? '' : v).indexOf('确诊') >= 0;
   }
 
+  /**
+   * 生成生活方案（离线兜底）：基于模板复制，结合是否确诊/风险等级微调。
+   * @param {Object} userInfo 用户信息
+   * @param {string} lifeState 生活习惯描述
+   * @param {string} userAdvice 用户额外建议
+   * @returns {{plans:Array, summary:string, source:string}}
+   */
   function generateLifePlan(userInfo, lifeState, userAdvice) {
     var tpl = (global.DPA_SEED && global.DPA_SEED.LIFE_PLAN_TEMPLATE) || [];
     var list = JSON.parse(JSON.stringify(tpl));
@@ -211,6 +226,12 @@
     }
   };
 
+  /**
+   * 生成健康资讯（离线兜底）：从内置知识库按标签取一篇并加上个性化前缀。
+   * @param {Object} userInfo 用户信息
+   * @param {string} tag 资讯标签
+   * @returns {{tags, tag, article, source}}
+   */
   function generateNews(userInfo, tag) {
     var tags = (global.DPA_SEED && global.DPA_SEED.NEWS_TAGS) || Object.keys(NEWS_BANK);
     var chosen = tag || tags[Math.floor(Math.random() * tags.length)];
@@ -353,6 +374,13 @@
     { k: ['并发症', '肾病', '眼底', '视网膜', '足'], a: '糖尿病主要慢性并发症包括心血管疾病、肾病、视网膜病变、神经病变与糖尿病足。\n\n预防措施：\n1. 严格控糖（关注糖化血红蛋白）\n2. 同步管理血压血脂\n3. 戒烟限酒\n4. 每年至少筛查一次眼底、肾功能与足部' }
   ];
 
+  /**
+   * 医师咨询回复（离线兜底）：按关键词规则匹配命中则返回预置建议，
+   * 未命中返回一份通用的综合建议。
+   * @param {string} query 用户提问
+   * @param {Object} doctor 医生信息（可选，用于署名）
+   * @returns {string} 回复文本（Markdown）
+   */
   function doctorReply(query, doctor) {
     var q = String(query || '');
     for (var i = 0; i < DOCTOR_RULES.length; i++) {
@@ -380,6 +408,11 @@
     { k: ['风险', '预测', '评估'], a: '您可以前往「风险预测」页面填写个人信息（年龄、身高、体重、腰围、家族史、血压等），系统会基于中国糖尿病风险评分量表给出风险等级、概率与个性化建议。\n\n需要注意：结果仅供健康筛查参考，不能替代临床诊断。' }
   ];
 
+  /**
+   * AI 助手回复（离线兜底）：按助手规则匹配，未命中回退到医生知识库。
+   * @param {string} query 用户提问
+   * @returns {string} 回复文本（Markdown）
+   */
   function assistantReply(query) {
     var q = String(query || '');
     for (var i = 0; i < ASSISTANT_RULES.length; i++) {
@@ -399,6 +432,12 @@
 
   /* ==================== 管理助手指令 ==================== */
 
+  /**
+   * 管理助手指令解析（离线兜底）：识别统计/用户/文章/删除/新增/导出等指令，
+   * 返回含 action / reply / refresh 的操作对象，破坏性操作交由 UI 二次确认。
+   * @param {string} query 用户指令文本
+   * @returns {Object} 操作响应对象
+   */
   function adminCommand(query) {
     var q = String(query || '');
     var store = global.DPA.store;

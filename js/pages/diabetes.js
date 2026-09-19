@@ -1,7 +1,12 @@
 /**
- * pages/diabetes.js — 糖尿病类型详情
- * 数据来源：项目素材/知识库/*.docx（已提炼进 js/seed.js）
+ * pages/diabetes.js — 糖尿病类型详情页
+ * ======================================
+ * 功能：按「1型/2型/妊娠型/特殊型」展示糖尿病的病因、临床表现、治疗
+ *      原则与生活注意事项，顶部标签可切换类型。
+ * 交互模块：DPA.ui(渲染/转义)、DPA.store.types(类型数据)，prefill 自 js/seed.js。
+ * 数据来源：项目素材/知识库/*.docx（已提炼进 js/seed.js）。
  */
+// IIFE 隔离作用域；未登录先跳登录页。用 URL 的 type 定位当前类型。
 (function () {
   'use strict';
 
@@ -17,6 +22,7 @@
   var currentName = ui.query('type') || (all[0] && all[0].type_name);
 
   /* 类型切换 */
+  // 类型切换标签区：点击切换当前类型、激活样式，并更新 URL 参数
   var switchHost = document.getElementById('typeSwitch');
   switchHost.innerHTML = all.map(function (t) {
     return '<button class="filter-chip' + (t.type_name === currentName ? ' active' : '') + '" data-name="' + ui.escapeAttr(t.type_name) + '">' + ui.escapeHtml(t.type_name) + '</button>';
@@ -30,6 +36,12 @@
     history.replaceState(null, '', 'diabetes.html?type=' + encodeURIComponent(currentName));
   });
 
+  /**
+   * 根据当前类型渲染类型详情内容（标题、摘要、四个内容块与免责声明）。
+   * @returns {void} 无返回值
+   * 用途：类型不存在时显示空状态；否则渲染病因、临床表现、治疗原则、
+   *       生活注意事项列表，并更新页面标题。
+   */
   function render() {
     var t = store.types.get(currentName);
     if (!t) {
@@ -57,5 +69,6 @@
       '</div>';
   }
 
+  // 初始渲染当前类型详情
   render();
 })();

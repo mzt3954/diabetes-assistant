@@ -15,12 +15,14 @@ const ROLES = ['user', 'admin'];
 const USERNAME_RE = /^[A-Za-z0-9_\u4e00-\u9fa5]+$/;
 const PHONE_RE = /^1[3-9]\d{9}$/;
 
-/** 统一返回 { ok, value?, msg? } */
+/** 统一返回失败结果 { ok:false, msg }，供各校验/规范化函数复用 */
 function fail(msg) { return { ok: false, msg }; }
+/** 统一返回成功结果 { ok:true, value }，供各校验/规范化函数复用 */
 function pass(value) { return { ok: true, value }; }
 
 /* ==================== 字段校验 ==================== */
 
+/** 校验用户名：非空、长度 3~50、仅中文/英文/数字/下划线；返回 { ok, value?|msg? } */
 function checkUsername(raw) {
   const v = String(raw == null ? '' : raw).trim();
   if (!v) return fail('请输入用户名');
@@ -30,6 +32,7 @@ function checkUsername(raw) {
   return pass(v);
 }
 
+/** 校验密码：非空、长度 6~72（72 为 bcrypt/scrypt 兼容上限）；返回 { ok, value?|msg? } */
 function checkPassword(raw) {
   const v = String(raw == null ? '' : raw);
   if (!v) return fail('请输入密码');
@@ -40,6 +43,7 @@ function checkPassword(raw) {
 
 /* ==================== 字段规范化（空串 → NULL） ==================== */
 
+/** 规范化手机号：空串转为 null，非空则校验国内手机号格式 */
 function normPhone(raw) {
   const v = String(raw == null ? '' : raw).trim();
   if (!v) return pass(null);
@@ -47,6 +51,7 @@ function normPhone(raw) {
   return pass(v);
 }
 
+/** 规范化年龄：空转为 null，否则须为 1~120 的整数 */
 function normAge(raw) {
   if (raw === '' || raw === null || raw === undefined) return pass(null);
   const n = Number(raw);
@@ -55,6 +60,7 @@ function normAge(raw) {
   return pass(n);
 }
 
+/** 规范化性别：空转为 null，取值只能是 男/女 */
 function normGender(raw) {
   const v = String(raw == null ? '' : raw).trim();
   if (!v) return pass(null);
@@ -62,6 +68,7 @@ function normGender(raw) {
   return pass(v);
 }
 
+/** 规范化糖尿病类型：空转为 null，取值须在 DIABETES_TYPES 内 */
 function normDiabetesType(raw) {
   const v = String(raw == null ? '' : raw).trim();
   if (!v) return pass(null);
@@ -69,6 +76,7 @@ function normDiabetesType(raw) {
   return pass(v);
 }
 
+/** 规范化头像地址：仅限长度 ≤255，不做格式合法性校验 */
 function normAvatarUrl(raw) {
   const v = String(raw == null ? '' : raw).trim();
   if (v.length > 255) return fail('头像地址过长');

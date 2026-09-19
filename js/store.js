@@ -27,8 +27,15 @@
 
   var cache = Object.create(null);
 
+  /** 清空内存缓存：storage 事件（其他标签页写入）或键迁移后调用，避免读到脏数据 */
   function clearCache() { cache = Object.create(null); }
 
+  /**
+   * 读取存储项并解析为对象，带内存缓存（命中缓存则直接返回）。
+   * @param {string} key 存储键（自动加前缀 P）
+   * @param {*} fallback 缺失或解析失败时的默认值
+   * @returns {*} 解析后的值
+   */
   function read(key, fallback) {
     if (key in cache) return cache[key];
     var value = fallback;
@@ -65,6 +72,12 @@
     try { write('users', list); } finally { suppressHook--; }
   }
 
+  /**
+   * 写入存储项（自动加前缀 P），写入成功后触发用户表变更钩子（若 key 为 users）。
+   * @param {string} key 存储键
+   * @param {*} value 要序列化的值
+   * @returns {boolean} 是否写入成功（超出配额等异常返回 false）
+   */
   function write(key, value) {
     cache[key] = value;
     var ok = false;
@@ -78,6 +91,7 @@
     return ok;
   }
 
+  /** 删除存储项（连同缓存），隐私模式等写入异常时静默忽略 */
   function remove(key) {
     delete cache[key];
     try { localStorage.removeItem(P + key); } catch (e) { /* 隐私模式等场景忽略 */ }
@@ -90,6 +104,7 @@
     });
   }
 
+  /** 生成自增 id：取 list 中指定字段的最大值 + 1（用于 user_id / article_id 等主键） */
   function uid(list, field) {
     var max = 0;
     list.forEach(function (it) {
@@ -98,8 +113,10 @@
     return max + 1;
   }
 
+  /** 深拷贝（JSON 序列化方式），用于把种子数据复制进本地存储 */
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
+  /** 补零到两位数（用于月/日格式化） */
   function pad2(n) { return n < 10 ? '0' + n : '' + n; }
 
   /**
@@ -115,6 +132,10 @@
 
   /* ==================== 初始化：写入种子数据 ==================== */
 
+  /**
+   * 初始化仓储：首次运行时把种子数据（用户/文章/分型/医生）写入本地，
+   * 并把历史明文口令就地升级为加盐哈希。
+   */
   function init() {
     if (!read('users', null)) write('users', clone(SEED.USERS || []));
     if (!read('articles', null)) write('articles', clone(SEED.ARTICLES || []));
@@ -140,10 +161,13 @@
   var UPDATABLE_FIELDS = ['username', 'phone', 'age', 'gender', 'diabetesType', 'avatar_url'];
 
   var users = {
+    /** 全部用户列表 */
     all: function () { return read('users', []); },
+    /** 按用户名查找用户 */
     findByUsername: function (username) {
       return users.all().filter(function (u) { return u.username === username; })[0] || null;
     },
+    /** 按 user_id 查找用户 */
     findById: function (id) {
       return users.all().filter(function (u) { return u.user_id === id; })[0] || null;
     },
@@ -321,6 +345,11 @@
       return changed;
     },
 
+    /**
+     * 创建新用户（密码加盐哈希存储），用户名重复则返回失败。
+     * @param {Object} data {username, password, profile}
+     * @returns {{ok:boolean, user?:Object, msg?:string}}
+     */
     create: function (data) {
       var list = users.all();
       if (users.findByUsername(data.username)) return { ok: false, msg: '用户名已存在' };
@@ -344,6 +373,12 @@
       return { ok: true, user: publicUser(user) };
     },
 
+    /**
+     * 更新用户资料；只允许修改白名单字段，非白名单字段会忽略并告警。
+     * @param {string} username 目标用户名
+     * @param {Object} patch 待更新字段
+     * @returns {{ok:boolean, user?:Object, msg?:string}}
+     */
     update: function (username, patch) {
       var list = users.all();
       var idx = -1;
@@ -387,6 +422,7 @@
       return { ok: true, moved: moved, user: res.user };
     },
 
+    /** 用户总数 */
     count: function () { return users.all().length; }
   };
 
@@ -425,6 +461,7 @@
   var SESSION_KEY = 'session';
 
   var session = {
+    /** 读取当前会话对象 */
     get: function () { return session.current(); },
 
     /**
@@ -455,6 +492,7 @@
       return s;
     },
 
+    /** 清除会话（同时清 localStorage / sessionStorage 两处的会话记录） */
     clear: function () {
       remove(SESSION_KEY);
       try { sessionStorage.removeItem(P + SESSION_KEY); } catch (e) { /* ignore */ }
@@ -469,16 +507,19 @@
       return read(SESSION_KEY, null);
     },
 
+    /** 当前登录用户名（未登录返回 null） */
     username: function () {
       var s = session.current();
       return s ? s.username : null;
     },
 
+    /** 当前登录用户 id（未登录返回 null） */
     userId: function () {
       var s = session.current();
       return s ? s.user_id : null;
     },
 
+    /** 是否管理员角色 */
     isAdmin: function () {
       var s = session.current();
       return !!s && s.role === 'admin';
@@ -500,19 +541,28 @@
   }
 
   var articles = {
+    /** 全部文章列表（叠加独立存储的阅读量） */
     all: function () { return rawArticles().map(withViews); },
+    /** 按 article_id 查文章 */
     get: function (id) {
       return articles.all().filter(function (a) { return a.article_id === id; })[0] || null;
     },
+    /** 按分类筛选文章；cat 为空或 '全部' 时返回全部 */
     byCategory: function (cat) {
       if (!cat || cat === '全部') return articles.all();
       return articles.all().filter(function (a) { return a.category === cat; });
     },
+    /** 现有文章分类集合 */
     categories: function () {
       var set = {};
       articles.all().forEach(function (a) { if (a.category) set[a.category] = 1; });
       return Object.keys(set);
     },
+    /**
+     * 新增文章（追加到列表头部）。
+     * @param {Object} data {title, author?, publish_time?, content?, category?}
+     * @returns {Object} 新文章对象（含自增 article_id）
+     */
     add: function (data) {
       var list = rawArticles();
       var item = {
@@ -541,6 +591,7 @@
       write(VIEWS_KEY, map);
       return map[id];
     },
+    /** 删除单篇文章 */
     remove: function (id) {
       write('articles', rawArticles().filter(function (a) { return a.article_id !== id; }));
     },
@@ -557,7 +608,9 @@
   /* ==================== 糖尿病类型（diabetes_types） ==================== */
 
   var types = {
+    /** 全部糖尿病类型 */
     all: function () { return read('diabetes_types', []); },
+    /** 按类型名查询糖尿病类型 */
     get: function (name) {
       return types.all().filter(function (t) { return t.type_name === name; })[0] || null;
     }
@@ -566,7 +619,9 @@
   /* ==================== 医生（doctor_information） ==================== */
 
   var doctors = {
+    /** 全部医生 */
     all: function () { return read('doctors', []); },
+    /** 按 info_id 查医生 */
     get: function (id) {
       return doctors.all().filter(function (d) { return d.info_id === id; })[0] || null;
     }
@@ -575,7 +630,9 @@
   /* ==================== 收藏（article_collections） ==================== */
 
   var collections = {
+    /** 收藏作用域键名（按当前用户名隔离） */
     key: function () { return 'collections:' + (session.username() || 'guest'); },
+    /** 当前用户收藏列表 */
     all: function () { return read(collections.key(), []); },
     has: function (articleId) {
       return collections.all().some(function (c) { return c.article_id === articleId; });
@@ -604,22 +661,32 @@
       write(collections.key(), list);
       return added;
     },
+    /** 当前用户收藏的文章列表 */
     listArticles: function () {
       var ids = collections.idSet();
       return articles.all().filter(function (a) { return ids[a.article_id] === true; });
     },
+    /** 收藏总数 */
     count: function () { return collections.all().length; }
   };
 
   /* ==================== 风险信息（user_risk_info） ==================== */
 
   var risk = {
+    /** 风险记录作用域键名（按当前用户名隔离） */
     key: function () { return 'risk:' + (session.username() || 'guest'); },
+    /** 最近一次风险预测记录 */
     latest: function () {
       var list = read(risk.key(), []);
       return list.length ? list[list.length - 1] : null;
     },
+    /** 风险预测历史记录 */
     history: function () { return read(risk.key(), []); },
+    /**
+     * 保存一条风险预测记录（只保留最近 30 条）。
+     * @param {Object} data 风险预测结果
+     * @returns {Object} 带 record_id / create_time 的记录
+     */
     save: function (data) {
       var list = read(risk.key(), []);
       var item = Object.assign({}, data, {
@@ -637,8 +704,11 @@
   /* ==================== 生活方案（life_plans） ==================== */
 
   var plans = {
+    /** 生活方案作用域键名（按当前用户名隔离） */
     key: function () { return 'plans:' + (session.username() || 'guest'); },
+    /** 当前用户生活方案列表 */
     all: function () { return read(plans.key(), []); },
+    /** 按类型筛选方案（如 '饮食'/'运动'/'其他'） */
     byType: function (type) {
       return plans.all().filter(function (p) { return p.type === type; });
     },
@@ -649,20 +719,30 @@
       write(plans.key(), list);
       return list;
     },
+    /**
+     * 保存方案列表（补齐自增 id 与 user_id 后写入）。
+     * @param {Array} list 方案数组
+     * @returns {Array} 写入后的方案列表
+     */
     save: function (list) {
       list.forEach(function (p, i) { p.id = p.id || i + 1; p.user_id = session.userId(); });
       write(plans.key(), list);
       return list;
     },
+    /** 整体替换方案 */
     replace: function (list) { return plans.save(list); },
+    /** 方案总数 */
     count: function () { return plans.all().length; },
+    /** 清空方案 */
     clear: function () { write(plans.key(), []); }
   };
 
   /* ==================== 打卡（punch_in） ==================== */
 
   var punch = {
+    /** 打卡作用域键名（按当前用户名隔离） */
     key: function () { return 'punch:' + (session.username() || 'guest'); },
+    /** 当前用户打卡记录列表 */
     all: function () { return read(punch.key(), []); },
 
     /** 某天某方案的打卡状态 */
@@ -708,6 +788,7 @@
       return done;
     },
 
+    /** 某天的全部打卡记录 */
     byDate: function (date) {
       return punch.all().filter(function (p) { return p._date === date; });
     },
@@ -727,17 +808,27 @@
       return out;
     },
 
+    /** 已完成打卡的总次数 */
     count: function () {
       return punch.all().filter(function (p) { return p.completion_status === '已完成'; }).length;
     },
+    /** 清空打卡记录 */
     clear: function () { write(punch.key(), []); }
   };
 
   /* ==================== 聊天记录 ==================== */
 
   var chat = {
+    /** 聊天记录作用域键名（按用户名 + 应用隔离） */
     key: function (appId) { return 'chat:' + (session.username() || 'guest') + ':' + appId; },
+    /** 某应用的聊天记录 */
     all: function (appId) { return read(chat.key(appId), []); },
+    /**
+     * 追加一条聊天消息到某应用的记录（时间戳补齐，仅保留最新 200 条）。
+     * @param {string} appId 应用键名
+     * @param {Object} msg 消息对象
+     * @returns {Array} 更新后的聊天记录
+     */
     push: function (appId, msg) {
       var list = chat.all(appId);
       list.push(Object.assign({ time: new Date().toISOString() }, msg));
@@ -745,19 +836,25 @@
       write(chat.key(appId), list);
       return list;
     },
+    /** 清空某应用的聊天记录 */
     clear: function (appId) { write(chat.key(appId), []); },
+    /** 读取某应用的服务端会话 id（用于多轮对话续接） */
     conversationId: function (appId) { return read('conv:' + appId, ''); },
+    /** 保存某应用的服务端会话 id */
     setConversationId: function (appId, id) { write('conv:' + appId, id); }
   };
 
   /* ==================== 用户偏好 ==================== */
 
   var prefs = {
+    /** 用户偏好作用域键名 */
     key: function () { return 'prefs:' + (session.username() || 'guest'); },
+    /** 读取偏好项 */
     get: function (k, dft) {
       var p = read(prefs.key(), {});
       return p[k] === undefined ? dft : p[k];
     },
+    /** 写入偏好项 */
     set: function (k, v) {
       var p = read(prefs.key(), {});
       p[k] = v;
@@ -767,6 +864,7 @@
 
   /* ==================== 统计 ==================== */
 
+  /** 汇总各实体数量，供管理后台统计使用 */
   function stats() {
     return {
       users: users.count(),

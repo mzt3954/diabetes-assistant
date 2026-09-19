@@ -1,6 +1,11 @@
 /**
  * pages/help.js — 帮助中心
+ * =========================
+ * 功能：FAQ 常见问题列表（可展开折叠）、使用指南入口跳转、系统信息
+ *      （版本号与在线/离线模式）展示。
+ * 交互模块：DPA.ui(渲染/转义)、DPA_CONFIG(应用配置)，无数据请求。
  */
+// IIFE 隔离作用域；未登录先跳登录页。
 (function () {
   'use strict';
 
@@ -46,6 +51,7 @@
     }
   ];
 
+  // 渲染 FAQ 列表：#faqList 逐条生成问题/答案卡片
   var host = document.getElementById('faqList');
   host.innerHTML = FAQ.map(function (item, i) {
     return '<div class="faq-item" data-index="' + i + '">' +
@@ -57,6 +63,7 @@
     '</div>';
   }).join('');
 
+  // FAQ 折叠交互：点击问题标题切换其父项 .open 展开/收起
   host.addEventListener('click', function (e) {
     var q = e.target.closest('.faq-question');
     if (!q) return;
@@ -64,11 +71,13 @@
   });
 
   /* 使用指南跳转 */
+  // 所有带 data-href 的菜单项点击后跳转对应页面
   document.querySelectorAll('.menu-item[data-href]').forEach(function (item) {
     item.addEventListener('click', function () { location.href = item.dataset.href; });
   });
 
   /* 系统信息 */
+  // 展示应用版本与在线/离线运行模式
   document.getElementById('versionText').textContent = DPA_CONFIG.app.version;
   document.getElementById('modeText').textContent = DPA_CONFIG.isOnline()
     ? '在线模式（已接入 Dify）'

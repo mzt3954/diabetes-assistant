@@ -23,9 +23,10 @@
       .replace(/'/g, '&#39;');
   }
 
-  /** 属性值转义（用于 data-* / onclick 参数） */
+  /** 属性值转义（在 HTML 转义基础上额外转义反引号，用于 data-* / onclick 参数） */
   function escapeAttr(str) { return escapeHtml(str).replace(/`/g, '&#96;'); }
 
+  /** 补零到两位数（时间/日期格式化用） */
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
   /** 2026-01-15 -> 2026年1月15日 */
@@ -115,6 +116,7 @@
     info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
   };
 
+  /** 获取或按需创建全局 Toast 容器元素 */
   function toastContainer() {
     var el = document.getElementById('dpaToastContainer');
     if (!el) {
@@ -126,6 +128,7 @@
     return el;
   }
 
+  /** 显示一条 Toast 提示（success/error/warning/info，默认 2.2s 后自动淡出移除） */
   function toast(message, type, duration) {
     type = type || 'success';
     var box = toastContainer();
@@ -184,6 +187,7 @@
     return { el: backdrop, close: close };
   }
 
+  /** 确认对话框：返回 Promise<boolean>，用户点确定 resolve(true)，取消/关闭 resolve(false) */
   function confirm(opts) {
     return new Promise(function (resolve) {
       var m = modal({
@@ -287,6 +291,7 @@
 
   /* ============ 状态占位 ============ */
 
+  /** 生成空状态占位 HTML（可带图标/标题/说明/操作按钮） */
   function emptyState(opts) {
     opts = opts || {};
     return '<div class="empty-state">' +
@@ -299,11 +304,12 @@
       '</div>';
   }
 
+  /** 生成加载占位 HTML（转圈 + 提示文字） */
   function loading(text) {
     return '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">' + escapeHtml(text || '加载中...') + '</div></div>';
   }
 
-  /** 骨架屏（列表） */
+  /** 生成骨架屏列表 HTML（n 张卡片，默认 3） */
   function skeletonList(n) {
     var one = '<div class="skeleton-card"><div class="skeleton-block" style="width:100px;height:80px"></div>' +
       '<div style="flex:1"><div class="skeleton-line" style="width:80%"></div>' +
@@ -314,7 +320,9 @@
   /* ============ 表单校验 ============ */
 
   var validators = {
+    /** 必填校验 */
     required: function (v) { return !!String(v || '').trim() || '此项为必填'; },
+    /** 用户名校验（长度 + 只允许中英文/数字/下划线） */
     username: function (v) {
       v = String(v || '').trim();
       if (!v) return '请输入用户名';
@@ -322,15 +330,18 @@
       if (!/^[A-Za-z0-9_\u4e00-\u9fa5]+$/.test(v)) return '用户名仅支持中英文、数字和下划线';
       return true;
     },
+    /** 密码校验（至少 6 位） */
     password: function (v) {
       if (!v) return '请输入密码';
       if (String(v).length < 6) return '密码长度不能少于 6 位';
       return true;
     },
+    /** 手机号校验（未填视为通过） */
     phone: function (v) {
       if (!v) return true;
       return /^1[3-9]\d{9}$/.test(v) || '请输入正确的手机号';
     },
+    /** 数值范围校验（高阶函数，返回一个校验器） */
     range: function (min, max, label) {
       return function (v) {
         if (v === '' || v === null || v === undefined) return true;
@@ -373,6 +384,7 @@
 
   /* ============ 杂项 ============ */
 
+  /** 防抖：wait ms 内的连续调用只执行最后一次（默认 300ms） */
   function debounce(fn, wait) {
     var t;
     return function () {

@@ -1,6 +1,11 @@
 /**
- * pages/lifeplan.js — 生活方案（展示 / 定制 / 打卡）
+ * pages/lifeplan.js — 生活方案
+ * =============================
+ * 功能：生活方案的展示、标签筛选、按天打卡、一键生成与定制生成。
+ * 交互模块：DPA.ui(渲染/空状态/提示/弹窗)、DPA.store(方案/打卡/风险数据)、
+ *          DPA.api.generateLifePlan(云端生成，失败降级本地)。
  */
+// IIFE 隔离作用域；未登录先跳登录页。
 (function () {
   'use strict';
 
@@ -22,6 +27,10 @@
   var TODAY = store.dateKey(new Date());
 
   /* ---------- 渲染 ---------- */
+  /**
+   * 渲染方案区整体状态：无方案时展示空状态与生成引导，否则展示统计并渲染列表。
+   * @returns {void} 无返回值
+   */
   function render() {
     var list = store.plans.all();
     if (!list.length) {
@@ -57,10 +66,16 @@
     renderList();
   }
 
+  /** 生成单个统计块 HTML（数值 + 标签） */
   function stat(v, l) {
     return '<div class="plan-stat"><div class="plan-stat-value">' + v + '</div><div class="plan-stat-label">' + l + '</div></div>';
   }
 
+  /**
+   * 按当前类型筛选并渲染方案列表，为每个方案的打卡按钮绑定点击。
+   * @returns {void} 无返回值
+   * 用途：读取当天打卡状态映射，渲染方案项并支持点击打卡/取消打卡。
+   */
   function renderList() {
     var list = store.plans.byType(currentType).sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
     if (!list.length) {
@@ -102,6 +117,7 @@
   }
 
   /* ---------- 标签切换 ---------- */
+  // 方案类型标签切换：更新当前类型并重渲染列表
   document.getElementById('planTabs').addEventListener('click', function (e) {
     var tab = e.target.closest('.plan-tab');
     if (!tab) return;
@@ -111,6 +127,12 @@
   });
 
   /* ---------- 生成 / 定制方案 ---------- */
+  /**
+   * 生成生活方案（一键或定制）。
+   * @param {boolean} silent 为 true 时不弹出「方案已生成」提示（首次自动生成）
+   * @returns {Promise} 解析为接口返回结果
+   * 用途：结合风险等级与定制输入调用 api.generateLifePlan，成功后保存并重渲染。
+   */
   function generate(silent) {
     var risk = store.risk.latest();
     var userInfo = { riskLevel: risk ? risk.level : '', disease: risk ? risk.disease : '' };
@@ -126,14 +148,16 @@
     });
   }
 
-  // 定制方案弹层：保存/恢复 overflow 原值，避免与 ui.modal 互相覆盖
+  // 定制方案弹层的开关控制（Modal 打开/关闭按钮及点击遮罩关闭）
   var modal = document.getElementById('customizeModal');
   var prevOverflow = '';
+  /** 打开定制方案弹层：记录 body 原 overflow 并禁用背景滚动 */
   function openModal() {
     prevOverflow = document.body.style.overflow;
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
   }
+  /** 关闭定制方案弹层：移除 active 并还原 body overflow */
   function closeModal() {
     modal.classList.remove('active');
     document.body.style.overflow = prevOverflow;
@@ -144,6 +168,7 @@
   document.getElementById('cancelCustomize').addEventListener('click', closeModal);
   modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
 
+  // 提交定制方案：进入生成中状态，调用 generate 成功后关闭弹层
   document.getElementById('submitCustomize').addEventListener('click', function () {
     var btn = this;
     var label = btn.querySelector('.btn-text');
@@ -165,9 +190,11 @@
     });
   });
 
+  // 查看打卡记录：跳转到打卡分析页
   document.getElementById('checkinBtn').addEventListener('click', function () { location.href = 'checkin.html'; });
 
   /* ---------- 初始化 ---------- */
+  // 首次进入且无方案时自动生成基础方案，否则直接渲染
   if (!store.plans.all().length) {
     // 首次进入自动生成一份基础方案
     generate(true).catch(function () { render(); });

@@ -23,6 +23,7 @@ const { hashPassword } = require('../password');
 
 const router = express.Router();
 
+/** 统一错误响应：按 status（默认 400）返回 { ok:false, error:{code,message} } */
 function badRequest(res, code, message, status) {
   return res.status(status || 400).json({ ok: false, error: { code, message } });
 }
@@ -35,6 +36,12 @@ function parseId(raw) {
 
 /* ==================== 查（列表） ==================== */
 
+/**
+ * GET /api/users —— 查询用户列表（分页 + 关键字 + 角色过滤）
+ * 查询参数：page（默认1）、pageSize（默认20，上限100）、keyword（匹配 username/phone）、role
+ * 处理：分页与 pageSize 做安全裁剪；keyword/role 筛选；role 需在白名单内
+ * 返回：{ total, page, pageSize, items }，items 为脱敏用户数组
+ */
 router.get('/', async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
@@ -82,6 +89,12 @@ router.get('/', async (req, res, next) => {
 
 /* ==================== 查（单个） ==================== */
 
+/**
+ * GET /api/users/:id —— 查询单个用户
+ * 路径参数：id（正整数）
+ * 处理：解析并校验 id → 按 user_id 查询
+ * 返回：脱敏用户对象；无此用户返回 404 USER_NOT_FOUND
+ */
 router.get('/:id', async (req, res, next) => {
   try {
     const id = parseId(req.params.id);
@@ -98,6 +111,12 @@ router.get('/:id', async (req, res, next) => {
 
 /* ==================== 增 ==================== */
 
+/**
+ * POST /api/users —— 新增用户（等价后台建号）
+ * 接收 body：username、password（必需），phone/age/gender/diabetesType/avatar_url（可选），role（默认 user）
+ * 处理：校验用户名/口令/可选资料 → 查重 → scrypt 哈希 → 入库，status 固定为 1
+ * 返回：201 及脱敏后的新用户；错误以 code 区分（INVALID_* / USERNAME_TAKEN 409）
+ */
 router.post('/', async (req, res, next) => {
   try {
     const body = req.body || {};
@@ -140,6 +159,13 @@ router.post('/', async (req, res, next) => {
 
 /* ==================== 改 ==================== */
 
+/**
+ * PUT /api/users/:id —— 更新用户资料
+ * 路径参数：id（正整数）；接收 body：仅白名单 UPDATABLE_FIELDS 内字段可写
+ * 处理：校验 id 与用户存在性 → 字段逐个校验并组 SET → username 变更需查重 → 更新
+ *       白名单外字段被收集进 rejected 随响应返回；role/password/status 不可经此改写
+ * 返回：更新后的脱敏用户及 rejected 列表；无字段可更新报 NOTHING_TO_UPDATE
+ */
 router.put('/:id', async (req, res, next) => {
   try {
     const id = parseId(req.params.id);
@@ -207,6 +233,12 @@ router.put('/:id', async (req, res, next) => {
 
 /* ==================== 删 ==================== */
 
+/**
+ * DELETE /api/users/:id —— 删除用户
+ * 路径参数：id（正整数）
+ * 处理：校验 id 与用户存在性 → 删除（login_logs 外键 ON DELETE SET NULL，历史日志保留）
+ * 返回：{ deleted:{ user_id, username } }；无此用户返回 404 USER_NOT_FOUND
+ */
 router.delete('/:id', async (req, res, next) => {
   try {
     const id = parseId(req.params.id);

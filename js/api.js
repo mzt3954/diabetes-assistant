@@ -25,16 +25,30 @@
 
   /* ==================== 通用工具 ==================== */
 
+  /**
+   * 拼接 Dify 完整地址：baseUrl + path（去掉 baseUrl 末尾斜杠）。
+   * @param {string} path 接口路径，如 '/workflows/run'、'/chat-messages'
+   * @returns {string} 拼接后的完整 URL
+   */
   function endpoint(path) {
     return String(CFG.DIFY.baseUrl || '').replace(/\/$/, '') + path;
   }
 
+  /**
+   * 按应用 ID 取 Dify 应用配置对象。
+   * @param {string} appId apps 中的键名（如 'riskPrediction'）
+   * @returns {Object} 应用配置对象
+   */
   function appConfig(appId) {
     var app = CFG.DIFY.apps[appId];
     if (!app) throw new Error('未注册的 Dify 应用: ' + appId);
     return app;
   }
 
+  /**
+   * 当前 Dify 会话的用户标识。
+   * @returns {string} 当前登录用户名，未登录/读取异常时回退为 'anonymous'
+   */
   function currentUser() {
     try {
       return global.DPA.store.session.username() || 'anonymous';
@@ -102,6 +116,12 @@
     return s.replace(/<think>[\s\S]*?<\/think>/g, '');
   }
 
+  /**
+   * 把值解析成对象（三级容错）。
+   * 依次尝试：直接解析 → 剥离 markdown 代码块围栏 → 截取首尾 {/[ 之间的片段。
+   * @param {*} v 待解析值（非字符串直接返回 null）
+   * @returns {Object|null} 解析成功返回对象，失败返回 null（由调用方决定降级）
+   */
   function tryParse(v) {
     if (typeof v !== 'string') return null;
     var s = stripThink(v.trim());
@@ -145,18 +165,28 @@
     return out;
   }
 
+  /** 数值转换；非法/非有限值回退到默认值 dft */
   function num(v, dft) {
     var n = Number(v);
     return isFinite(n) ? n : dft;
   }
+  /** 百分比转换（0–100 取整钳制）；用于概率/比率字段归一 */
   function pct(v, dft) {
     return Math.max(0, Math.min(100, Math.round(num(v, dft === undefined ? 0 : dft))));
   }
+  /** 字符串转换；null/undefined/空串回退到默认值 dft */
   function str(v, dft) {
     return (v === null || v === undefined || v === '') ? dft : String(v);
   }
+  /** 数组归一：非数组一律返回空数组 */
   function arr(v) { return Array.isArray(v) ? v : []; }
 
+  /**
+   * 构造「Dify 契约不匹配」错误，并打上 .contract=true 标记。
+   * @param {string} appId 应用 ID
+   * @param {string} detail 契约不匹配的具体说明
+   * @returns {Error} 带标记的错误对象
+   */
   function contractError(appId, detail) {
     var e = new Error('Dify 返回契约不匹配（' + appId + '）：' + detail);
     e.contract = true;
@@ -507,6 +537,7 @@
   var FALLBACK_NOTICE_INTERVAL = 60000;   // 降级提示最小间隔，避免反复打扰
   var lastFallbackNotice = 0;
 
+  /** 降级提示节流：距上次提示不足 FALLBACK_NOTICE_INTERVAL 时不再提醒，避免反复打扰 */
   function notifyFallbackOnce() {
     var now = Date.now();
     if (now - lastFallbackNotice < FALLBACK_NOTICE_INTERVAL) return;
@@ -514,6 +545,12 @@
     ui.notifyFallback();
   }
 
+  /**
+   * 降级执行本地引擎函数，并把结果包装成 Promise（同步抛出也转为 rejection）。
+   * @param {Function} fn 本地引擎函数
+   * @param {Array} args 透传给 fn 的参数
+   * @returns {Promise} 本地执行结果
+   */
   function fallback(fn, args) {
     notifyFallbackOnce();
     try {
@@ -628,6 +665,7 @@
     return Promise.resolve({ action: 'delete_articles_done', removed: removed, refresh: true });
   }
 
+  /** 记录一次「降级到本地引擎」的原因（区分契约不匹配与请求失败），仅写入控制台 */
   function logFallback(appId, err) {
     if (err && err.contract) {
       console.warn('[api] ' + appId + ' 契约不匹配，已降级本地引擎：' + err.message);

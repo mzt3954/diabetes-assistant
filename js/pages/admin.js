@@ -1,7 +1,13 @@
 /**
- * pages/admin.js — AI 智能管理（管理员）
- * 对应课程任务 10-1 ~ 10-3：通过自然语言指令管理平台数据
+ * pages/admin.js — AI 智能管理（管理员后台）
+ * ===========================================
+ * 功能：以「AI 管理助手」自然语言对话的形式管理平台数据，
+ *      同时提供数据总览、数据表查看与 JSON 数据导出能力。
+ * 交互模块：DPA.ui(界面渲染/弹窗/主题变量)、DPA.store(本地数据统计/读取)、
+ *          DPA.api.adminCommand(自然语言指令)、DPA.api.adminDeleteArticles(删除文章)。
+ * 关卡：对应课程任务 10-1 ~ 10-3。
  */
+// 页面脚本采用 IIFE 隔离作用域；仅有管理员身份才可进入，否则直接终止执行。
 (function () {
   'use strict';
 
@@ -20,6 +26,12 @@
   var AGENT_COLOR = ui.themeVar('--agent-color', '#7C3AED');
 
   /* ---------- 数据总览 ---------- */
+  /**
+   * 渲染管理后台顶部的数据统计卡片区。
+   * @returns {void} 无返回值
+   * 用途：读取 store 中各业务的统计量（注册用户/文章/方案/打卡/风险/收藏），
+   *       拼装成统计卡片 HTML 并写入 #adminStats 元素。
+   */
   function renderStats() {
     var s = store.stats();
     document.getElementById('adminStats').innerHTML =
@@ -27,11 +39,23 @@
       card(s.plans, '生活方案') + card(s.punch, '打卡记录') +
       card(s.riskRecords, '风险记录') + card(s.collections, '收藏记录');
   }
+  /**
+   * 生成单个统计卡片的 HTML 片段。
+   * @param {number|string} v 统计数值
+   * @param {string} l 数值对应的说明标签
+   * @returns {string} 统计卡片 HTML 字符串
+   */
   function card(v, l) {
     return '<div class="admin-stat"><div class="admin-stat-value">' + v + '</div><div class="admin-stat-label">' + l + '</div></div>';
   }
 
   /* ---------- 数据表 ---------- */
+  /**
+   * 根据 currentTable 当前选中的表，读取数据并渲染成表格列表。
+   * @returns {void} 无返回值
+   * 用途：按用户/文章/方案/打卡/风险五类分别取字段拼表头与行数据，
+   *       空数据时展示空状态，最多渲染前 40 行到 #tableArea。
+   */
   function renderTable() {
     var host = document.getElementById('tableArea');
     var rows = [];
@@ -83,6 +107,7 @@
       }).join('');
   }
 
+  // 数据表标签切换事件：根据点击的筛选 chip 切换 currentTable 并重渲染
   document.getElementById('tableTabs').addEventListener('click', function (e) {
     var chip = e.target.closest('.filter-chip');
     if (!chip) return;
@@ -97,6 +122,12 @@
   var sendBtn = document.getElementById('adminSend');
   var busy = false;
 
+  /**
+   * 在聊天区追加一条对话气泡，并自动滚动到底部。
+   * @param {string} role 角色：'user' 为用户，其余为机器人
+   * @param {string} content 消息内容（支持 Markdown 渲染）
+   * @returns {void} 无返回值
+   */
   function bubble(role, content) {
     var isUser = role === 'user';
     messagesEl.insertAdjacentHTML('beforeend',
@@ -107,6 +138,10 @@
     ui.scrollToBottom(messagesEl);
   }
 
+  /**
+   * 渲染快捷指令按钮组，并将每个按钮绑定发送事件。
+   * @returns {void} 无返回值
+   */
   function renderQuick() {
     var host = document.getElementById('adminQuick');
     host.innerHTML = QUICK.map(function (q) { return '<button type="button">' + ui.escapeHtml(q) + '</button>'; }).join('');
@@ -115,9 +150,14 @@
     });
   }
 
+  /** 刷新统计数据与数据表：用于增删后同步视图 */
   function refreshAll() { renderStats(); renderTable(); }
 
-  /** 破坏性操作二次确认：本地引擎只解析出待删 ID，真正删除必须经用户确认 */
+  /**
+   * 破坏性删除前的二次确认，确认通过后调用接口执行删除。
+   * @param {number[]} ids 待删除的文章 ID 数组
+   * @returns {Promise} 用户取消时返回 null，执行删除时返回接口结果
+   */
   function confirmDelete(ids) {
     return ui.confirm({
       title: '确认删除文章？',
@@ -134,6 +174,13 @@
     });
   }
 
+  /**
+   * 发送一条管理员指令到 AI 管理助手。
+   * @param {string} [text] 可选文本；缺省时读取输入框当前内容
+   * @returns {void} 无返回值
+   * 用途：追加用户气泡→显示打字占位→调用 api.adminCommand 获取回复，
+   *       若返回删除动作则触发二次确认；最后统一恢复发送按钮可用状态。
+   */
   function send(text) {
     text = (text || inputEl.value).trim();
     if (!text || busy) return;
@@ -171,16 +218,20 @@
     });
   }
 
+  // 发送按钮点击：发送当前输入框内容
   sendBtn.addEventListener('click', function () { send(); });
+  // 输入框回车发送（Shift+Enter 可换行）
   inputEl.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   });
+  // 输入框自适应高度：随内容自动增高并限制最大 110px
   inputEl.addEventListener('input', function () {
     inputEl.style.height = 'auto';
     inputEl.style.height = Math.min(inputEl.scrollHeight, 110) + 'px';
   });
 
   /* ---------- 导出数据 ---------- */
+  // 导出按钮点击：二次确认后收集各业务数据生成 JSON 快照并触发浏览器下载
   document.getElementById('exportBtn').addEventListener('click', function () {
     ui.confirm({
       title: '导出数据快照',
@@ -213,6 +264,7 @@
   });
 
   /* ---------- 初始化 ---------- */
+  // 页面初始化：渲染统计、数据表、快捷指令，并给出一条欢迎消息
   renderStats();
   renderTable();
   renderQuick();

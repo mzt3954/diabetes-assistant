@@ -79,6 +79,7 @@
     return String(API.baseUrl || '').replace(/\/+$/, '');
   }
 
+  /** 拼接后端完整地址：baseUrl + path */
   function url(path) {
     return baseUrl() + path;
   }
@@ -137,12 +138,14 @@
 
   /* ==================== 探测与镜像 ==================== */
 
+  /** 标记后端可用，重置连续失败计数并记录探测时间 */
   function markReady() {
     probeState = 'ready';
     consecutiveFailures = 0;
     lastProbeAt = Date.now();
   }
 
+  /** 标记后端不可用，累计连续失败次数并记录探测时间 */
   function markOffline() {
     probeState = 'offline';
     consecutiveFailures++;
@@ -284,9 +287,13 @@
   var db = {
     /** 是否处于数据库模式 */
     get mode() { return probeState === 'ready' ? 'database' : 'local'; },
+    /** 后端是否可用（已连上） */
     get available() { return probeState === 'ready'; },
+    /** 数据库模式是否被禁用（无头测试环境 / 配置关闭） */
     get disabled() { return DISABLED; },
+    /** 当前探测状态：idle/pending/ready/offline */
     get probeState() { return probeState; },
+    /** 解析后的后端 baseUrl */
     get baseUrl() { return baseUrl(); },
 
     probe: probe,

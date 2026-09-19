@@ -87,6 +87,7 @@ async function stats() {
   return rows[0];
 }
 
+/** 关闭连接池（进程退出时调用，释放所有连接） */
 async function closePool() {
   if (pool) {
     await pool.end();

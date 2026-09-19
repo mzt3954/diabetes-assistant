@@ -8,6 +8,7 @@
 
   var doc = document;
 
+  /** 读取 CSS 自定义属性（设计令牌）值，读取失败时回退到 fallback */
   function cssVar(name, fallback) {
     try {
       var v = getComputedStyle(doc.documentElement).getPropertyValue(name);
@@ -18,6 +19,7 @@
     }
   }
 
+  /** HTML 转义，防止标签/IP 注入 */
   function escapeHtml(str) {
     return String(str == null ? '' : str)
       .replace(/&/g, '&amp;')
@@ -28,12 +30,19 @@
   }
 
   var uidCounter = 0;
+  /** 生成页内唯一 id（前缀 + 自增计数），用于 SVG 渐变等需引用元素 */
   function uid(prefix) {
     uidCounter++;
     return 'dpa-' + prefix + '-' + uidCounter;
   }
 
   /* ---------- 趋势折线 ---------- */
+  /**
+   * 渲染趋势折线图（内联 SVG + 渐变面积），按容器实际宽度自适应。
+   * @param {string|Element} selector 容器选择器或 DOM 元素
+   * @param {Array} data 数据点数组 [{label, value}]
+   * @param {Object} [opts] 配置 {title 图表标题}
+   */
   function trendLine(selector, data, opts) {
     opts = opts || {};
     var container = typeof selector === 'string' ? doc.querySelector(selector) : selector;
@@ -121,6 +130,12 @@
   }
 
   /* ---------- 进度环形图 ---------- */
+  /**
+   * 渲染进度环形图（SVG 圆环 + 中心百分比）。
+   * @param {string|Element} selector 容器选择器或 DOM 元素
+   * @param {number} percent 完成百分比（0–100）
+   * @param {Object} [opts] 配置 {title, label, color(CSS 变量名)}
+   */
   function progressRing(selector, percent, opts) {
     opts = opts || {};
     var container = typeof selector === 'string' ? doc.querySelector(selector) : selector;
@@ -153,6 +168,12 @@
   }
 
   /* ---------- 浏览量条形图 ---------- */
+  /**
+   * 渲染浏览量横向条形图（纯 CSS 条宽）。
+   * @param {string|Element} selector 容器选择器或 DOM 元素
+   * @param {Array} data 数据数组 [{label, value}]
+   * @param {Object} [opts] 配置 {title}
+   */
   function barChart(selector, data, opts) {
     opts = opts || {};
     var container = typeof selector === 'string' ? doc.querySelector(selector) : selector;

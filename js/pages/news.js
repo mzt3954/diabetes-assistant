@@ -1,7 +1,12 @@
 /**
- * pages/news.js — 健康资讯（标签 / 生成 / 收藏）
- * 对应课程任务 7-1 ~ 7-3
+ * pages/news.js — 健康资讯
+ * =========================
+ * 功能：资讯按标签筛选与收藏筛选、文章列表渲染、AI 生成新资讯。
+ * 交互模块：DPA.ui(渲染/空状态/提示/转义)、DPA.store(文章/收藏/风险数据)、
+ *          DPA.api.generateNews(云端生成资讯)。
+ * 关卡：对应课程任务 7-1 ~ 7-3。
  */
+// IIFE 隔离作用域；未登录先跳登录页。
 (function () {
   'use strict';
 
@@ -22,6 +27,10 @@
   var tagsEl = document.getElementById('newsTags');
 
   /* ---------- 标签 ---------- */
+  /**
+   * 渲染顶部标签：种子标签 + 数据中出现的新分类 + 「我的收藏」，并绑定点击筛选。
+   * @returns {void} 无返回值
+   */
   function renderTags() {
     var cats = store.articles.categories();
     var all = ['全部'].concat(SEED_TAGS.filter(function (t, i, a) { return a.indexOf(t) === i; }))
@@ -50,10 +59,19 @@
   }
 
   /* ---------- 列表 ---------- */
+  /**
+   * 将 Markdown 正文截取为纯文本摘要（去重 Markdown 语法，最多 90 字）。
+   * @param {string} md 原始 Markdown 内容
+   * @returns {string} 摘要文本
+   */
   function excerpt(md) {
     return String(md || '').replace(/[#>*`-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 90);
   }
 
+  /**
+   * 按当前筛选（收藏/分类）渲染资讯列表，并绑定文章跳转与收藏切换事件。
+   * @returns {void} 无返回值
+   */
   function renderList() {
     var list = showOnlyFav
       ? store.collections.listArticles()
@@ -110,6 +128,7 @@
   }
 
   /* ---------- 生成资讯 ---------- */
+  // 生成按钮：进入加载态 → 携带风险等级与标签调用 api.generateNews → 保存并刷新
   document.getElementById('generateBtn').addEventListener('click', function () {
     var btn = this;
     var label = btn.querySelector('.btn-text');
@@ -143,6 +162,7 @@
   });
 
   /* ---------- 初始化 ---------- */
+  // 页面初始化：渲染标签与资讯列表
   renderTags();
   renderList();
 })();

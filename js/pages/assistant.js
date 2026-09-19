@@ -1,7 +1,13 @@
 /**
  * pages/assistant.js — AI 智能助手（SSE 流式输出）
- * 对应课程任务 9-1 ~ 9-3：实现聊天 + 流式显示 + 多轮上下文
+ * ==================================================
+ * 功能：糖尿病问答聊天页，支持流式输出、多轮上下文、快捷问题、
+ *      聊天历史持久化与清空，可在简介视图与聊天视图间切换。
+ * 交互模块：DPA.ui(渲染/滚动/提示)、DPA.store.chat(历史与会话ID)、
+ *          DPA.api.assistantChat(SSE 流式接口)。
+ * 关卡：对应课程任务 9-1 ~ 9-3（聊天 + 流式显示 + 多轮上下文）。
  */
+// IIFE 隔离作用域；未登录先跳登录页。
 (function () {
   'use strict';
 
@@ -27,6 +33,13 @@
   var controller = null;
 
   /* ---------- 渲染 ---------- */
+  /**
+   * 生成单条聊天消息气泡的 HTML。
+   * @param {string} role 角色 'user'/'bot'
+   * @param {string} content 消息内容（支持 Markdown）
+   * @param {string} [time] 可选时间戳，非空时渲染时间
+   * @returns {string} 消息 HTML 字符串
+   */
   function msgHtml(role, content, time) {
     var isUser = role === 'user';
     return '<div class="chat-msg ' + (isUser ? 'user' : 'bot') + '">' +
@@ -36,11 +49,16 @@
       (time ? '<div class="chat-time">' + ui.formatTime(time) + '</div>' : '') + '</div></div>';
   }
 
+  /** 追加一条消息到消息区并滚动到底部 */
   function append(role, content, time) {
     messagesEl.insertAdjacentHTML('beforeend', msgHtml(role, content, time));
     ui.scrollToBottom(messagesEl);
   }
 
+  /**
+   * 渲染聊天历史：有记录则逐条回显，无记录时展示欢迎语。
+   * @returns {void} 无返回值
+   */
   function renderHistory() {
     var history = store.chat.all(APP_ID);
     if (!history.length) {
@@ -51,6 +69,7 @@
     ui.scrollToBottom(messagesEl);
   }
 
+  /** 渲染快捷问题按钮，点击时直接发送对应问题 */
   function renderQuick() {
     var host = document.getElementById('chatQuick');
     host.innerHTML = QUICK.map(function (q) { return '<button type="button">' + ui.escapeHtml(q) + '</button>'; }).join('');
@@ -60,6 +79,7 @@
   }
 
   /* ---------- 视图切换 ---------- */
+  /** 从简介视图切到聊天视图：隐藏简介、初始化历史与快捷问题并聚焦输入框 */
   function openChat() {
     introView.classList.add('hidden');
     chatView.classList.remove('hidden');
@@ -68,6 +88,7 @@
     renderQuick();
     inputEl.focus();
   }
+  /** 关闭聊天并退回简介视图；若正在流式输出则先中止请求 */
   function closeChat() {
     if (controller) { controller.abort(); controller = null; }
     streaming = false;
@@ -78,8 +99,16 @@
   }
 
   /* ---------- 发送 ---------- */
+  /** 启停发送状态：禁用/启用发送按钮与输入框 */
   function setSending(on) { sendBtn.disabled = on; inputEl.disabled = on; }
 
+  /**
+   * 发送一句话给 AI 助手，并开启 SSE 流式接收回复。
+   * @param {string} [text] 可选文本；缺省读取输入框内容
+   * @returns {void} 无返回值
+   * 用途：追加用户气泡并持久化 → 插入打字占位 → 调用 api.assistantChat，
+   *       由 onDelta 增量渲染、onDone 保存完整回复，出错时保留已输出内容。
+   */
   function send(text) {
     text = (text || inputEl.value).trim();
     if (!text || streaming) return;
@@ -128,6 +157,7 @@
       finish();
     });
 
+    /** 收尾：结束流式状态、清空控制器并恢复输入 */
     function finish() {
       streaming = false;
       controller = null;
@@ -137,9 +167,11 @@
   }
 
   /* ---------- 事件 ---------- */
+  // 开始对话 / 返回简介按钮
   document.getElementById('startChat').addEventListener('click', openChat);
   document.getElementById('backToIntro').addEventListener('click', closeChat);
 
+  // 清空会话：确认后清空历史与会话ID并重新渲染
   document.getElementById('clearChat').addEventListener('click', function () {
     ui.confirm({ title: '清空会话', message: '确定要清空全部聊天记录吗？', danger: true }).then(function (ok) {
       if (!ok) return;
@@ -150,6 +182,7 @@
     });
   });
 
+  // 发送按钮点击 / 回车发送 / 输入框自适应高度
   sendBtn.addEventListener('click', function () { send(); });
 
   inputEl.addEventListener('keydown', function (e) {
@@ -162,5 +195,6 @@
   });
 
   /* ---------- 初始化：带参直接进聊天 ---------- */
+  // URL 带 chat=1 时自动进入聊天视图
   if (ui.query('chat') === '1') openChat();
 })();

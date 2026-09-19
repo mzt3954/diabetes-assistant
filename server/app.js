@@ -25,10 +25,20 @@ const PROJECT_ROOT = path.join(__dirname, '..');
 /** 不允许通过 HTTP 访问的路径前缀（安全边界） */
 const BLOCKED = /^\/(server|node_modules|\.env|\.git)(\/|$)/i;
 
+/**
+ * 创建并配置 Express 应用实例（供 index.js 启动时调用）。
+ * 无参数；返回已装配好中间件与路由的 app 对象。
+ * 内部按顺序挂载：全局设置 → CORS → 日志 → 健康检查 → 业务路由 → 静态托管 → 404 → 统一错误处理。
+ */
 function createApp() {
   const app = express();
 
   app.disable('x-powered-by');
+  /* 全局关闭 ETag。
+   * Express 默认给 res.json() 也生成 ETag，浏览器下次带 If-None-Match
+   * 就会拿到 304 空响应体 —— 前端拿到空 body 会解析失败，
+   * 且改了资料后重新拉取镜像会读到旧数据。API 数据一律不做条件缓存。 */
+  app.set('etag', false);
   app.use(express.json({ limit: '256kb' }));
 
   /* ---------- 本地开发用的 CORS ----------
@@ -46,9 +56,11 @@ function createApp() {
     return next();
   });
 
-  /* ---------- 访问日志 ---------- */
+  /* ---------- 访问日志 + API 禁用缓存 ---------- */
   app.use(function (req, res, next) {
     if (!req.path.startsWith('/api/')) return next();
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
     const started = Date.now();
     res.on('finish', function () {
       console.log(`[api] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${Date.now() - started}ms)`);

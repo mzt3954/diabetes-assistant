@@ -20,6 +20,7 @@ try {
   /* 没有 .env 属正常情况，继续使用默认值 */
 }
 
+/** 把环境变量字符串转成整数，解析失败或非有限数时回退到默认值 */
 function toInt(value, fallback) {
   const n = parseInt(value, 10);
   return Number.isFinite(n) ? n : fallback;

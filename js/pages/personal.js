@@ -1,7 +1,12 @@
 /**
  * pages/personal.js — 个人中心
- * 修复原实现中"登录写 isAdmin、个人中心读 role"导致的权限判断不一致问题。
+ * ============================
+ * 功能：展示用户信息与统计、编辑个人资料、菜单跳转、关于系统弹窗与退出登录。
+ * 交互模块：DPA.ui(弹窗/提示/转义)、DPA.store(用户/打卡/方案/收藏数据)、
+ *          DPA.auth(当前会话/资料保存)。
+ * 说明：修复原实现中"登录写 isAdmin、个人中心读 role"导致的权限判断不一致问题。
  */
+// IIFE 隔离作用域；未登录先跳登录页。
 (function () {
   'use strict';
 
@@ -17,6 +22,10 @@
   var $ = function (id) { return document.getElementById(id); };
 
   /* ---------- 渲染用户信息 ---------- */
+  /**
+   * 渲染用户信息：头像、用户名、角色、三类统计与管理员入口显隐。
+   * @returns {void} 无返回值；当前无会话时直接返回
+   */
   function render() {
     var s = auth.current();
     if (!s) return;
@@ -34,11 +43,16 @@
   }
 
   /* ---------- 菜单跳转 ---------- */
+  // 所有带 data-href 的菜单项点击后跳转
   document.querySelectorAll('.menu-item[data-href]').forEach(function (item) {
     item.addEventListener('click', function () { location.href = item.dataset.href; });
   });
 
   /* ---------- 编辑资料 ---------- */
+  /**
+   * 打开「编辑个人资料」弹窗，保存时校验并应用修改（含改名迁移数据键）。
+   * @returns {void} 无返回值
+   */
   function openEdit() {
     var s = auth.current();
     var user = store.users.findByUsername(s.username) || {};
@@ -114,10 +128,12 @@
     });
   }
 
+  // 编辑资料 / 头像编辑按钮
   $('editProfileBtn').addEventListener('click', openEdit);
   $('avatarEdit').addEventListener('click', openEdit);
 
   /* ---------- 关于 ---------- */
+  // 关于按钮：弹出「关于本系统」信息弹窗
   $('aboutBtn').addEventListener('click', function () {
     ui.modal({
       title: '关于本系统',
@@ -133,6 +149,7 @@
   });
 
   /* ---------- 退出登录 ---------- */
+  // 退出按钮：二次确认后调用 auth.logout 登出
   $('logoutBtn').addEventListener('click', function () {
     ui.confirm({
       title: '确认退出登录？',
@@ -142,5 +159,6 @@
     }).then(function (ok) { if (ok) auth.logout(); });
   });
 
+  // 初始化渲染用户信息
   render();
 })();

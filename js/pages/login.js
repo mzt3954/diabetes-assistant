@@ -1,6 +1,11 @@
 /**
  * pages/login.js — 登录 / 注册页
+ * ==============================
+ * 功能：登录表单与注册表单切换、密码显隐、表单校验、登录/注册提交、
+ *      演示账号一键填充；已登录用户自动跳转。
+ * 交互模块：DPA.ui(校验/转义/提示/重定向校验)、DPA.auth(登录/注册/会话)。
  */
+// IIFE 隔离作用域。登录/注册成功后跳转到页面 URL 指定的安全 redirect。
 (function () {
   'use strict';
 
@@ -17,6 +22,11 @@
   var loginForm = document.getElementById('loginForm');
   var registerForm = document.getElementById('registerForm');
 
+  /**
+   * 切换登录/注册表单及顶部标签的激活态，并清空表单错误信息。
+   * @param {string} target 目标标签：'login' 或 'register'
+   * @returns {void} 无返回值
+   */
   function switchTab(target) {
     tabs.forEach(function (t) {
       var on = t.dataset.tab === target;
@@ -29,6 +39,7 @@
     document.querySelectorAll('.form-input').forEach(function (e) { e.classList.remove('error'); });
   }
 
+  // Tab 及「去注册/去登录」链接触发切换
   tabs.forEach(function (tab) {
     tab.addEventListener('click', function () { switchTab(tab.dataset.tab); });
   });
@@ -36,6 +47,7 @@
   document.getElementById('goToLogin').addEventListener('click', function (e) { e.preventDefault(); switchTab('login'); });
 
   /* ---------- 密码显隐 ---------- */
+  // 点击眼睛图标在明文/密文间切换
   document.querySelectorAll('.password-toggle').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var input = document.getElementById(btn.dataset.target);
@@ -46,6 +58,13 @@
   });
 
   /* ---------- 加载态 ---------- */
+  /**
+   * 设置提交按钮的加载态：禁用按钮、切换文字并控制 loading 动画显示。
+   * @param {HTMLElement} btn 按钮元素
+   * @param {boolean} loading 是否处于加载中
+   * @param {string} [text] 按钮文字（非加载态显示）
+   * @returns {void} 无返回值
+   */
   function setLoading(btn, loading, text) {
     var label = btn.querySelector('.btn-text');
     var spinner = btn.querySelector('.loading-spinner');
@@ -55,6 +74,7 @@
   }
 
   /* ---------- 登录 ---------- */
+  // 登录表单提交：校验 → 加载态 → 调用 auth.login，成功后带信息跳转
   loginForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var ok = ui.validate({
@@ -86,6 +106,7 @@
   });
 
   /* ---------- 注册 ---------- */
+  // 注册表单提交：校验（含二次密码一致性）→ 加载态 → 调用 auth.register
   registerForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var ok = ui.validate({
@@ -121,6 +142,7 @@
   });
 
   /* ---------- 演示账号一键填充 ---------- */
+  // 演示账号按钮：切换到登录并自动填入账号密码
   document.querySelectorAll('.demo-account').forEach(function (btn) {
     btn.addEventListener('click', function () {
       switchTab('login');
